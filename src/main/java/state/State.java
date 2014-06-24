@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Created by davidhislop on 2014/06/23.
+ * Created by david.hislop@korwe.com on 2014/06/23.
  */
 public abstract class State  {
     final Logger log = LoggerFactory.getLogger(this.getClass());
@@ -37,24 +37,36 @@ public abstract class State  {
         return currentState;
     }
 
-    protected void changeCurrentState(State st) {
-        log.trace("Base before changeCurrentState to " + st.getState() + " from " + stateIOHandler.getCurrentState() + ".");
-        stateIOHandler.changeCurrentState(st);
-    }
-
     public enum StateDescriptor {Initial, State1, State2, State3, Final};
     private StateDescriptor currentState ;
 
     public abstract ResultWrapper<DTO> doIt(Message message) throws InvalidStateTransitionException;
 
-    protected Boolean transition(StateDescriptor sd) {
-        log.trace("State transition from " + this.getState() + " to " + sd +".");
-        if (stateIOHandler.getCurrentState() != this.getState()) {
-            log.error("Current state " + stateIOHandler.getCurrentState() + " != " + " base state " + this.getState() + ".");
-            return false;
+    protected abstract Boolean mooreTransition(String payload) ;
+
+    protected abstract Boolean mealyTransition() ;
+
+    Boolean mooreTransitionLock = false;
+
+    protected Boolean transition(StateDescriptor sd, String message) {
+        log.trace("State transition from " + this.getState() + " to " + sd + ".");
+        synchronized (mooreTransitionLock) {
+            //mooreTransitionStart
+            if (stateIOHandler.getCurrentState() != this.getState()) {
+                log.error("Current state " + stateIOHandler.getCurrentState() + " != " + " base state " + this.getState() + ".");
+                return false;
+            }
+
+            //mooreTransitionMid
+            if (!mooreTransition(message)) {
+                log.error("Cannot transition.");
+                return false;
+            }
+
+            //mooreTransitionEnd
+            State st = makeNew(sd);
+            stateIOHandler.changeCurrentState(st);
         }
-        State st = makeNew(sd);
-        changeCurrentState(st);
         return true;
     }
 }

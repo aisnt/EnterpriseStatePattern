@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Vector;
 
 /**
- * Created by davidhislop on 2014/06/21.
+ * Created by david.hislop@korwe.com on 2014/06/21.
  */
 public abstract class MessageListener extends Thread {
     final Logger log = LoggerFactory.getLogger(this.getClass());
@@ -19,7 +19,7 @@ public abstract class MessageListener extends Thread {
 
     protected void onMessage(Message message) {
         log.trace("MessageListener onMessage for " + message.getState() + " state.");
-        command.handleMessage( message);
+        command.onMessage(message);
     }
 
     @Override
@@ -29,33 +29,34 @@ public abstract class MessageListener extends Thread {
             while (true) {
                 log.trace("MessageListener getMessage");
                 getMessage();
-                //sleep(5000);
+                sleep(50);//TODO param
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
 
+    //TODO move to test
     private Vector<Message> messages = new Vector();
     static final int MAXQUEUE = 5;
-
     protected synchronized void putMessage() throws InterruptedException {
         log.trace("MessageListener.putMessage start ...");
         while (messages.size() == MAXQUEUE) {
             wait();
         }
-        Message message = new Message(getRandomState(), new java.util.Date().toString());
+        Message message = new Message(makeRandomState(), new java.util.Date().toString());
         messages.addElement(message);
         log.trace("MessageListener.putMessage " + message.getState() + " " + message.getPayload() );
         notify();
         //Later, when the necessary event happens, the thread that is running it calls notify() from a block synchronized on the same object.
     }
 
-    private state.State.StateDescriptor getRandomState() {
-        log.trace("MessageListener.getRandomState ");
-        int i = (int) (Math.random()*5);
-        state.State.StateDescriptor sd =  state.State.StateDescriptor.values()[i];
-        log.trace("MessageListener.getRandomState " + i + " "+sd);
+    //TODO move to test
+    private state.State.StateDescriptor makeRandomState() {
+        log.trace("MessageListener.makeRandomState ");
+        int i = (int) (Math.random()*5);//TODO Hardcoded hokum
+        state.State.StateDescriptor sd =  state.State.StateDescriptor.values()[i];//TODO expensive
+        log.trace("MessageListener.makeRandomState " + i + " "+sd);
         return sd;
     }
 
@@ -67,7 +68,7 @@ public abstract class MessageListener extends Thread {
         }
         log.trace("MessageListener.getMessage ... continuing ...");
         Message message = (Message)messages.firstElement();
-        log.info("MessageListener.getMessage got  ..." + message.getState() + " state.");
+        log.info("MessageListener.getMessage retrieved " + message.getState() + " state.");
         onMessage( message );
         messages.removeElement(message);
         return message;

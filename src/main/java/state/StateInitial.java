@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Created by davidhislop on 2014/06/23.
+ * Created by david.hislop@korwe.com on 2014/06/23.
  */
 public class StateInitial  extends State {
     final Logger log = LoggerFactory.getLogger(this.getClass());
@@ -19,43 +19,30 @@ public class StateInitial  extends State {
 
     @Override
     public ResultWrapper<DTO> doIt(Message message) throws InvalidStateTransitionException {
-        log.trace("StateInitial.doIt From " + this.getState() + " to " + message.getState() +".");
+        log.trace("StateInitial.doIt From " + this.getState() + " to " + message.getState() + ".");
         switch (message.getState()) {
             case State1: {
-                mooreTransition(message.getPayload());
-                transition(StateDescriptor.State1);
+                if (!transition(StateDescriptor.State1, message.getPayload())){
+                    throw new InvalidStateTransitionException("Failed from " + this.getState() + " to " + message.getState() +".");
+                }
                 break;
             }
             default: {
-                throw new InvalidStateTransitionException("Failed From " + this.getState() + " to " + message.getState() +".");
+                throw new InvalidStateTransitionException("Failed from " + this.getState() + " to " + message.getState() +".");
             }
         }
         return new ResultWrapper<DTO>(new DTO());
     }
 
-    private Boolean mooreTransition(String payload) {
-        log.trace("mooreTransition -> " + payload);
-        //return mooreTransitionStart() && mooreTransitionMid() && mooreTransitionEnd();
+    //return mooreTransitionStart() && mooreTransitionMid() && mooreTransitionEnd();
+    @Override
+    protected Boolean mooreTransition(String payload) {
+        log.info("mooreTransition -> " + payload);
         return true;
     }
 
-    private Boolean mooreTransitionStart() {
-        //TODO
-        return true;
-    }
-
-    private Boolean mooreTransitionMid() {
-        //TODO
-        return true;
-    }
-
-    private Boolean mooreTransitionEnd() {
-        //TODO
-        return true;
-    }
-
-    private Boolean mealyTransition() {
-        //TODO
-        return false;
+    @Override
+    protected Boolean mealyTransition() {
+        return null;
     }
 }

@@ -10,7 +10,7 @@ import state.InvalidStateTransitionException;
 import state.State;
 
 /**
- * Created by davidhislop on 2014/06/22.
+ * Created by david.hislop@korwe.com on 2014/06/22.
  */
 public class StateIOHandler implements Command {
     final Logger log = LoggerFactory.getLogger(this.getClass());
@@ -25,24 +25,30 @@ public class StateIOHandler implements Command {
     /*We need to use the derived object*/
     private State currentStateObject;
     @Override
-    public void handleMessage(Message s)  {
-        State.StateDescriptor old = currentStateObject.getState();
-        log.trace("Base.handleMessage Desired transition from " + old + " to " +  s.getState() + ".");
-        try {
-            ResultWrapper<DTO> dto = currentStateObject.doIt(s);
-            log.info("Successful transition from " + old + " to " + s.getState()   + ".");
-        } catch (InvalidStateTransitionException ex) {
-            log.trace(ex.getMessage());
-            log.info("Failed transition from " + currentStateObject.getState() + ".");
+    public void onMessage(Message s)  {
+        synchronized(currentStateObject) {
+            State.StateDescriptor old = getCurrentState();
+            log.trace("Base.onMessage Desired transition from " + old + " to " + s.getState() + ".");
+            try {
+                ResultWrapper<DTO> dto = currentStateObject.doIt(s);
+                log.info("Successful transition from " + old + " to " + s.getState() + ".");
+            } catch (InvalidStateTransitionException ex) {
+                log.trace(ex.getMessage());
+                log.info("Failed transition from " + currentStateObject.getState() + ".");
+            }
         }
     }
 
     public void changeCurrentState(State st) {
-        log.info("Base before changeCurrentState to " + st.getState() + " from "+ currentStateObject.getState()  + ".");
-        currentStateObject = st;
+        log.info("Base before changeCurrentState to " + st.getState() + " from " + currentStateObject.getState() + ".");
+        synchronized(currentStateObject) {
+            currentStateObject = st;
+        }
     }
 
     public State.StateDescriptor getCurrentState() {
-        return currentStateObject.getState();
+        synchronized(currentStateObject) {
+            return currentStateObject.getState();
+        }
     }
 }
