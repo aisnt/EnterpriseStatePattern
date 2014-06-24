@@ -1,6 +1,8 @@
 package command;
 
 import io.StateIOHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import state.State;
 import state.StateInitial;
 
@@ -8,6 +10,7 @@ import state.StateInitial;
  * Created by davidhislop on 2014/06/22.
  */
 public class Main {
+    final static Logger log = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) {
         // MessageListener messageListener = new MessageListenerImpl( new CommandImpl( new TransferApiImpl() ) );
@@ -19,8 +22,8 @@ public class Main {
 
         while (stateIOHandler.getCurrentState() != State.StateDescriptor.Final) {
             try {
-                System.out.println("main. Waiting 1 second in state " + state.getState());
-                Thread.sleep(1000);
+                log.trace("main. Waiting 1 second in state " + state.getState());
+                Thread.sleep(100);
                 messageListener.putMessage();
             } catch (InterruptedException e) {
                 e.printStackTrace();

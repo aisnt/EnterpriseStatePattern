@@ -4,6 +4,8 @@ import command.Command;
 import command.DTO;
 import command.ResultWrapper;
 import common.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import state.InvalidStateTransitionException;
 import state.State;
 
@@ -11,6 +13,7 @@ import state.State;
  * Created by davidhislop on 2014/06/22.
  */
 public class StateIOHandler implements Command {
+    final Logger log = LoggerFactory.getLogger(this.getClass());
     public StateIOHandler(State state) {
         currentStateObject = state;
     }
@@ -24,18 +27,18 @@ public class StateIOHandler implements Command {
     @Override
     public void handleMessage(Message s)  {
         State.StateDescriptor old = currentStateObject.getState();
-        System.out.println("Base.handleMessage Desired transition from " + old + " to " +  s.getState() + ".");
+        log.trace("Base.handleMessage Desired transition from " + old + " to " +  s.getState() + ".");
         try {
             ResultWrapper<DTO> dto = currentStateObject.doIt(s);
-            System.out.println("Successful transition from " + old + " to " + s.getState()   + ".");
+            log.info("Successful transition from " + old + " to " + s.getState()   + ".");
         } catch (InvalidStateTransitionException ex) {
-            System.out.println(ex.getMessage());
-            System.out.println("Failed transition from " + currentStateObject.getState() + ".");
+            log.trace(ex.getMessage());
+            log.info("Failed transition from " + currentStateObject.getState() + ".");
         }
     }
 
     public void changeCurrentState(State st) {
-        System.out.println("Base before changeCurrentState to " + st.getState() + " from "+ currentStateObject.getState()  + ".");
+        log.info("Base before changeCurrentState to " + st.getState() + " from "+ currentStateObject.getState()  + ".");
         currentStateObject = st;
     }
 
