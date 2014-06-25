@@ -17,18 +17,18 @@ public class State1 extends State {
     }
 
     @Override
-    public ResultWrapper<DTO> doIt(Message message)  throws InvalidStateTransitionException {
-        log.trace("State1.doIt From " + this.getState() + " to " + message.getState() +".");
+    public ResultWrapper<DTO> doTransition(Message message)  throws InvalidStateTransitionException {
+        log.trace("State1.doTransition() From " + this.getState() + " to " + message.getState() +".");
         switch (message.getState()) {
             case State2: {
                 if (!transition(StateDescriptor.State2, message.getPayload())) {
-                    throw new InvalidStateTransitionException("Failed from " + this.getState() + " to " + message.getState() +".");
+                    throw new InvalidStateTransitionException("State1.doTransition() Failed from " + this.getState() + " to " + message.getState() +".");
                 }
                 break;
             }
 
             default: {
-                throw new InvalidStateTransitionException("No transition from " + this.getState() + " to " + message.getState() +".");
+                throw new InvalidStateTransitionException("State1.doTransition() No transition from " + this.getState() + " to " + message.getState() +".");
             }
         }
         return new ResultWrapper<DTO>(new DTO());
@@ -36,7 +36,7 @@ public class State1 extends State {
 
     @Override
     protected Boolean mooreTransition(String payload) {
-        log.info("mooreTransition -> " + payload);
+        System.out.println("State1.mooreTransition() Output -> " + payload);
         return true;
     }
 

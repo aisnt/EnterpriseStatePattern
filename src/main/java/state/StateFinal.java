@@ -14,17 +14,17 @@ public class StateFinal extends State {
     final Logger log = LoggerFactory.getLogger(this.getClass());
 
     public StateFinal(StateIOHandler stateIOHandler) {
-        super(stateIOHandler,StateDescriptor.Final);
+        super(stateIOHandler, StateDescriptor.Final);
     }
     @Override
-    public ResultWrapper<DTO> doIt(Message message)  throws InvalidStateTransitionException{
-        log.trace("StateFinal.doIt From " + this.getState() + " to " + message.getState() +".");
-        throw new InvalidStateTransitionException("Failed From " + this.getState() + " to " + message.getState() +".");
+    public ResultWrapper<DTO> doTransition(Message message)  throws InvalidStateTransitionException{
+        log.trace("StateFinal.doTransition() From " + this.getState() + " to " + message.getState() +".");
+        throw new InvalidStateTransitionException("StateFinal.doTransition() Failed From " + this.getState() + " to " + message.getState() +".");
     }
 
     @Override
     protected Boolean mooreTransition(String payload) {
-        log.info("mooreTransition -> " + payload);
+        System.out.println("StateFinal.mooreTransition() Output -> " + payload);
         return true;
     }
 

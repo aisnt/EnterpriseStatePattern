@@ -14,28 +14,28 @@ public class State3 extends State {
     final Logger log = LoggerFactory.getLogger(this.getClass());
 
     public State3(StateIOHandler stateIOHandler) {
-        super(stateIOHandler,StateDescriptor.State3);
+        super(stateIOHandler, StateDescriptor.State3);
     }
     @Override
-    public ResultWrapper<DTO> doIt(Message message)  throws InvalidStateTransitionException {
-        log.trace("State3.doIt From " + this.getState() + " to " + message.getState() +".");
+    public ResultWrapper<DTO> doTransition(Message message)  throws InvalidStateTransitionException {
+        log.trace("State3.doTransition() From " + this.getState() + " to " + message.getState() +".");
         switch (message.getState()) {
 
             case State1: {
                 if (!transition(StateDescriptor.State1, message.getPayload())){
-                    throw new InvalidStateTransitionException("Failed from " + this.getState() + " to " + message.getState() +".");
+                    throw new InvalidStateTransitionException("State3.doTransition() Failed from " + this.getState() + " to " + message.getState() +".");
                 }
                 break;
             }
             case Final: {
                 if (!transition(StateDescriptor.Final, message.getPayload())){
-                    throw new InvalidStateTransitionException("Failed from " + this.getState() + " to " + message.getState() +".");
+                    throw new InvalidStateTransitionException("State3.doTransition() Failed from " + this.getState() + " to " + message.getState() +".");
                 }
                 break;
             }
 
             default: {
-                throw new InvalidStateTransitionException("Failed From " + this.getState() + " to " + message.getState() +".");
+                throw new InvalidStateTransitionException("State3.doTransition() Failed From " + this.getState() + " to " + message.getState() +".");
             }
         }
         return new ResultWrapper<DTO>(new DTO());
@@ -43,7 +43,7 @@ public class State3 extends State {
 
     @Override
     protected Boolean mooreTransition(String payload) {
-        log.info("mooreTransition -> " + payload);
+        System.out.println("State3.mooreTransition() Output -> " + payload);
         return true;
     }
 

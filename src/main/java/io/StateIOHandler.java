@@ -28,19 +28,19 @@ public class StateIOHandler implements Command {
     public void onMessage(Message s)  {
         synchronized(currentStateObject) {
             State.StateDescriptor old = getCurrentState();
-            log.trace("Base.onMessage Desired transition from " + old + " to " + s.getState() + ".");
+            log.trace("StateIOHandler.onMessage() Desired transition from " + old + " to " + s.getState() + ".");
             try {
-                ResultWrapper<DTO> dto = currentStateObject.doIt(s);
-                log.info("Successful transition from " + old + " to " + s.getState() + ".");
+                ResultWrapper<DTO> dto = currentStateObject.doTransition(s);
+                log.info("StateIOHandler.onMessage() Successful transition from " + old + " to " + s.getState() + ".");
             } catch (InvalidStateTransitionException ex) {
                 log.trace(ex.getMessage());
-                log.info("Failed transition from " + currentStateObject.getState() + ".");
+                log.info("StateIOHandler.onMessage() Failed transition from " + currentStateObject.getState() + ".");
             }
         }
     }
 
     public void changeCurrentState(State st) {
-        log.info("Base before changeCurrentState to " + st.getState() + " from " + currentStateObject.getState() + ".");
+        log.info("StateIOHandler.changeCurrentState() before changeCurrentState from " + currentStateObject.getState() + " to " + st.getState() + ".");
         synchronized(currentStateObject) {
             currentStateObject = st;
         }

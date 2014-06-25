@@ -13,15 +13,16 @@ import org.slf4j.LoggerFactory;
 public abstract class State  {
     final Logger log = LoggerFactory.getLogger(this.getClass());
     public State(StateIOHandler stateIOHandler, StateDescriptor stateDescriptor) {
-        log.trace("State ctor for " + stateDescriptor);
+        log.trace("State.ctor() for " + stateDescriptor);
         this.stateIOHandler = stateIOHandler;
         currentState = stateDescriptor;
     }
 
     StateIOHandler stateIOHandler;
 
+    //TODO
     State makeNew(StateDescriptor sd) {
-        log.trace("State.makeNew  " + sd);
+        log.trace("State.makeNew() " + sd);
         switch (sd) {
             case State1: return new State1(stateIOHandler);
             case State2: return new State2(stateIOHandler);
@@ -40,7 +41,7 @@ public abstract class State  {
     public enum StateDescriptor {Initial, State1, State2, State3, Final};
     private StateDescriptor currentState ;
 
-    public abstract ResultWrapper<DTO> doIt(Message message) throws InvalidStateTransitionException;
+    public abstract ResultWrapper<DTO> doTransition(Message message) throws InvalidStateTransitionException;
 
     protected abstract Boolean mooreTransition(String payload) ;
 
@@ -49,17 +50,17 @@ public abstract class State  {
     Boolean mooreTransitionLock = false;
 
     protected Boolean transition(StateDescriptor sd, String message) {
-        log.trace("State transition from " + this.getState() + " to " + sd + ".");
+        log.trace("State.transition() transition from " + this.getState() + " to " + sd + ".");
         synchronized (mooreTransitionLock) {
             //mooreTransitionStart
             if (stateIOHandler.getCurrentState() != this.getState()) {
-                log.error("Current state " + stateIOHandler.getCurrentState() + " != " + " base state " + this.getState() + ".");
+                log.error("State.transition() Current state " + stateIOHandler.getCurrentState() + " != " + " base state " + this.getState() + ".");
                 return false;
             }
 
             //mooreTransitionMid
             if (!mooreTransition(message)) {
-                log.error("Cannot transition.");
+                log.error("State.transition() Cannot transition.");
                 return false;
             }
 
