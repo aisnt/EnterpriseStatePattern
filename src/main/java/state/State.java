@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Created by david.hislop@korwe.com on 2014/06/23.
  */
-public abstract class State  {
+public abstract class State {
     final Logger log = LoggerFactory.getLogger(this.getClass());
     public State(StateIOHandler stateIOHandler, StateDescriptor stateDescriptor) {
         log.trace("State.ctor() for " + stateDescriptor);
@@ -21,9 +21,10 @@ public abstract class State  {
     StateIOHandler stateIOHandler;
 
     //TODO
-    State makeNew(StateDescriptor sd) {
-        log.trace("State.makeNew() " + sd);
-        switch (sd) {
+    State makeNew(StateDescriptor stateDescriptor) {
+        log.trace("State.makeNew() " + stateDescriptor);
+       // State s = new State(stateDescriptor);
+        switch (stateDescriptor) {
             case State1: return new State1(stateIOHandler);
             case State2: return new State2(stateIOHandler);
             case State3: return new State3(stateIOHandler);
@@ -51,6 +52,8 @@ public abstract class State  {
 
     protected Boolean transition(StateDescriptor sd, String message) {
         log.trace("State.transition() transition from " + this.getState() + " to " + sd + ".");
+        log.trace("State.transition() Before class Name = " + this.getClass().getName() + ".");
+
         synchronized (mooreTransitionLock) {
             //mooreTransitionStart
             if (stateIOHandler.getCurrentState() != this.getState()) {
@@ -68,6 +71,7 @@ public abstract class State  {
             State st = makeNew(sd);
             stateIOHandler.changeCurrentState(st);
         }
+        log.trace("State.transition() After class Name = " + this.getClass().getName() + ".");
         return true;
     }
 }

@@ -44,7 +44,9 @@ public class MessageListenerImpl extends MessageListener {
     private Vector<Message> messages = new Vector();
     private static final int MAXQUEUE = 5;
     private synchronized int addElement(Message message) throws InterruptedException {
-        while (messages.size() == MAXQUEUE) {
+        int size = messages.size();
+        while (size >=  MAXQUEUE) {
+            log.trace("MessageListenerImpl.addElement() waiting. Queue size = " + size + ".");
             wait();
         }
         messages.addElement(message);

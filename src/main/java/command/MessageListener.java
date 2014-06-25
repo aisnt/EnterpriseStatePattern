@@ -24,14 +24,15 @@ public abstract class MessageListener extends Thread {
     public void run() {
         log.trace("MessageListener.run()");
         try {
-            while (true) {
+            do {
                 log.trace("MessageListener.run() getMessage");
                 Message message = getMessage();
                 log.info("MessageListener.getMessage() retrieved " + message.getState() + " state.");
-                onMessage( message );
-            }
+                onMessage(message);
+                if (command.getLastEvent()!=null) log.info("MessageListener.getMessage() last event=" + command.getLastEvent().toString() + ".");
+            } while (command.getLastEvent() == null || ( command.getLastEvent().to != state.State.StateDescriptor.Final) );
         } catch (InterruptedException e) {
-            log.info("MessageListener.run() InterruptedException " + e.getMessage());
+            log.info("MessageListener.run() InterruptedException = " + e.getMessage());
         }
     }
 

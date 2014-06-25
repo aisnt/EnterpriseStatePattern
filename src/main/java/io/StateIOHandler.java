@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 import state.InvalidStateTransitionException;
 import state.State;
 
+import java.util.Date;
+
 /**
  * Created by david.hislop@korwe.com on 2014/06/22.
  */
@@ -33,16 +35,23 @@ public class StateIOHandler implements Command {
                 ResultWrapper<DTO> dto = currentStateObject.doTransition(s);
                 log.info("StateIOHandler.onMessage() Successful transition from " + old + " to " + s.getState() + ".");
             } catch (InvalidStateTransitionException ex) {
-                log.trace(ex.getMessage());
+                log.trace("StateIOHandler.onMessage() Exception=" + ex.getMessage());
                 log.info("StateIOHandler.onMessage() Failed transition from " + currentStateObject.getState() + ".");
             }
         }
+    }
+
+    private Event event = new Event(null, null,new Date());
+    @Override
+    public Event getLastEvent() {
+        return event;
     }
 
     public void changeCurrentState(State st) {
         log.info("StateIOHandler.changeCurrentState() before changeCurrentState from " + currentStateObject.getState() + " to " + st.getState() + ".");
         synchronized(currentStateObject) {
             currentStateObject = st;
+            event = new Event(currentStateObject.getState(), st.getState(), new Date());
         }
     }
 
@@ -52,3 +61,4 @@ public class StateIOHandler implements Command {
         }
     }
 }
+

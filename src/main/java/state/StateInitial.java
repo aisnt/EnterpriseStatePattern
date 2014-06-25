@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Created by david.hislop@korwe.com on 2014/06/23.
  */
-public class StateInitial  extends State {
+public class StateInitial extends State {
     final Logger log = LoggerFactory.getLogger(this.getClass());
     
     public StateInitial(StateIOHandler stateIOHandler) {
