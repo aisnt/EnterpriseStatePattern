@@ -1,6 +1,7 @@
 package command;
 
 import common.Message;
+import io.StateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,11 +10,12 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class MessageListener extends Thread {
     final Logger log = LoggerFactory.getLogger(this.getClass());
-    Command command;
     public MessageListener(Command command){
         log.trace("MessageListener.ctor()");
         this.command = command;
     }
+
+    Command command;
 
     protected void onMessage(Message message) {
         log.trace("MessageListener.onMessage() for " + message.getState() + " state.");
@@ -27,10 +29,11 @@ public abstract class MessageListener extends Thread {
             do {
                 log.trace("MessageListener.run() getMessage");
                 Message message = getMessage();
-                log.info("MessageListener.getMessage() retrieved " + message.getState() + " state.");
+                log.info("MessageListener.run() message retrieved " + message.getState() + " state.");
                 onMessage(message);
-                if (command.getLastEvent()!=null) log.info("MessageListener.getMessage() last event=" + command.getLastEvent().toString() + ".");
-            } while (command.getLastEvent() == null || ( command.getLastEvent().to != state.State.StateDescriptor.Final) );
+                sleep(50);  //Provide put with atom of opposition
+                log.info("MessageListener.getMessage() last event=" + StateHandler.INSTANCE.getLastEvent().toString() + ".");
+            } while ( StateHandler.INSTANCE.getLastEvent().to != state.State.StateDescriptor.Final );
         } catch (InterruptedException e) {
             log.info("MessageListener.run() InterruptedException = " + e.getMessage());
         }

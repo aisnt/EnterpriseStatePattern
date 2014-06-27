@@ -3,7 +3,6 @@ package state;
 import command.DTO;
 import command.ResultWrapper;
 import common.Message;
-import io.StateIOHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,8 +12,8 @@ import org.slf4j.LoggerFactory;
 public class State3 extends State {
     final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    public State3(StateIOHandler stateIOHandler) {
-        super(stateIOHandler, StateDescriptor.State3);
+    public State3( ) {
+        super( StateDescriptor.State3);
     }
     @Override
     public ResultWrapper<DTO> doTransition(Message message)  throws InvalidStateTransitionException {

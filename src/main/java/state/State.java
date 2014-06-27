@@ -3,7 +3,7 @@ package state;
 import command.DTO;
 import command.ResultWrapper;
 import common.Message;
-import io.StateIOHandler;
+import io.StateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,25 +11,21 @@ import org.slf4j.LoggerFactory;
  * Created by david.hislop@korwe.com on 2014/06/23.
  */
 public abstract class State {
-    final Logger log = LoggerFactory.getLogger(this.getClass());
-    public State(StateIOHandler stateIOHandler, StateDescriptor stateDescriptor) {
+    final static Logger log = LoggerFactory.getLogger(State.class);
+    public State(StateDescriptor stateDescriptor) {
         log.trace("State.ctor() for " + stateDescriptor);
-        this.stateIOHandler = stateIOHandler;
         currentState = stateDescriptor;
     }
 
-    StateIOHandler stateIOHandler;
-
-    //TODO
-    State makeNew(StateDescriptor stateDescriptor) {
-        log.trace("State.makeNew() " + stateDescriptor);
-       // State s = new State(stateDescriptor);
+    public static State create(StateDescriptor stateDescriptor) {
+        log.trace("State.create() " + stateDescriptor);
+//        StateHandler stateIOHandler = StateHandler.INSTANCE;
         switch (stateDescriptor) {
-            case State1: return new State1(stateIOHandler);
-            case State2: return new State2(stateIOHandler);
-            case State3: return new State3(stateIOHandler);
-            case Final: return new StateFinal(stateIOHandler);
-            case Initial: return new StateInitial(stateIOHandler);
+            case State1: return new State1();
+            case State2: return new State2();
+            case State3: return new State3();
+            case Final: return new StateFinal();
+            case Initial: return new StateInitial();
             default:
         }
         return null;
@@ -39,7 +35,7 @@ public abstract class State {
         return currentState;
     }
 
-    public enum StateDescriptor {Initial, State1, State2, State3, Final};
+    public enum StateDescriptor {Initial, State1, State2, State3, Final, Max};
     private StateDescriptor currentState ;
 
     public abstract ResultWrapper<DTO> doTransition(Message message) throws InvalidStateTransitionException;
@@ -50,14 +46,15 @@ public abstract class State {
 
     Boolean mooreTransitionLock = false;
 
+    /*By now the transition is permitted*/
     protected Boolean transition(StateDescriptor sd, String message) {
         log.trace("State.transition() transition from " + this.getState() + " to " + sd + ".");
         log.trace("State.transition() Before class Name = " + this.getClass().getName() + ".");
-
+        StateHandler stateHandler = StateHandler.INSTANCE;
         synchronized (mooreTransitionLock) {
             //mooreTransitionStart
-            if (stateIOHandler.getCurrentState() != this.getState()) {
-                log.error("State.transition() Current state " + stateIOHandler.getCurrentState() + " != " + " base state " + this.getState() + ".");
+            if (stateHandler.getCurrentState() != this.getState()) {
+                log.error("State.transition() Current state " + stateHandler.getCurrentState() + " != " + " base state " + this.getState() + ".");
                 return false;
             }
 
@@ -68,8 +65,8 @@ public abstract class State {
             }
 
             //mooreTransitionEnd
-            State st = makeNew(sd);
-            stateIOHandler.changeCurrentState(st);
+            State st = create(sd);
+            stateHandler.changeCurrentState(st);
         }
         log.trace("State.transition() After class Name = " + this.getClass().getName() + ".");
         return true;

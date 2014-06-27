@@ -25,7 +25,6 @@ public class CommandImpl implements Command {
         DTO dto = transferApi.get(msisdn);
     }
 
-    @Override
     public Event getLastEvent() {
         return null;
     }

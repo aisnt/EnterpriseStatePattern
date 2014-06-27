@@ -3,7 +3,6 @@ package state;
 import command.DTO;
 import command.ResultWrapper;
 import common.Message;
-import io.StateIOHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,8 +12,8 @@ import org.slf4j.LoggerFactory;
 public class StateInitial extends State {
     final Logger log = LoggerFactory.getLogger(this.getClass());
     
-    public StateInitial(StateIOHandler stateIOHandler) {
-        super(stateIOHandler, StateDescriptor.Initial);
+    public StateInitial( ) {
+        super( StateDescriptor.Initial);
     }
 
     @Override
