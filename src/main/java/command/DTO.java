@@ -6,4 +6,12 @@ package command;
 public class DTO {
     String something;
     String somethingElse;
+    @Override
+    public String toString() {
+        String result = null;
+        if (something != null) result = "something: " + something;
+        if (somethingElse != null) result += " somethingElse: " + somethingElse ;
+        if (result == null) result = "<Empty>";
+        return result;
+    }
 }

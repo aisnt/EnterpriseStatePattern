@@ -1,6 +1,7 @@
 package command;
 
 import common.Message;
+import io.Event;
 import io.MessageSource;
 import io.StateHandler;
 import org.junit.Before;
@@ -8,6 +9,8 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import state.State;
+
+import java.util.Iterator;
 
 /**
  * Created by david.hislop@korwe.com on 2014/06/21.
@@ -39,6 +42,14 @@ public class MessageListenerTest  {
                 log.warn("MessageListenerTest.testMain() InterruptedException " + e.getMessage());
             }
         }
+
+        Iterator it =  MessageSource.INSTANCE.events.iterator();
+        Iterator is =  MessageSource.INSTANCE.results.iterator() ;
+        while (it.hasNext() && is.hasNext() ) {
+            Event e = (Event)it.next();
+            ResultWrapper<DTO> rw = (ResultWrapper<DTO>)is.next();
+            System.out.println(e + "  " + rw);
+        };
     }
 
     protected void putMessage() throws InterruptedException {

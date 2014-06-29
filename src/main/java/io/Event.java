@@ -14,7 +14,7 @@ import java.util.Date;
 public class Event {
     final Logger log = LoggerFactory.getLogger(this.getClass());
     public Event( State.StateDescriptor from, State.StateDescriptor to, Date date ) {
-        log.info("Event.ctor() start From: " + from +" To: " + to + ".");
+        log.trace("Event.ctor() start From: " + from +" To: " + to + ".");
         this.from = from;
         this.to = to;
         this.date = date;
@@ -25,9 +25,7 @@ public class Event {
 
     @Override
     public String toString() {
-        String result = "From: " + from +" To: " + to + " Date: " + date.toString();
-
+        String result = "From: " + from + " To: " + to + " Date: " + date.toString();
         return result;
     }
-
 }

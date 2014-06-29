@@ -8,4 +8,10 @@ public class ResultWrapper<T> {
     public ResultWrapper(T t){
         this.t = t;
     }
+
+    @Override
+    public String toString() {
+        String result = t.toString();
+        return result;
+    }
 }

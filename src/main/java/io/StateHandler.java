@@ -22,11 +22,11 @@ public enum StateHandler {
 
     /*We need to use the derived object*/
     private State currentStateObject;
-    private Event event;
+    private Event currentEvent;
     final private Boolean stateLock = false;
     StateHandler() {
         currentStateObject = new StateInitial();
-        event = new Event(null, currentStateObject.getState(), new Date());
+        currentEvent = new Event(null, currentStateObject.getState(), new Date());
     }
 
     public void setState(State state) {
@@ -34,12 +34,12 @@ public enum StateHandler {
             State.StateDescriptor oldState = currentStateObject.getState();
             log.debug("StateHandler.setState() before changeCurrentState from " + oldState + " to " + state.getState() + ".");
             currentStateObject = state;
-            event = new Event(oldState, state.getState(), new Date());
+            currentEvent = new Event(oldState, state.getState(), new Date());
         }
     }
 
     public Event getLastEvent() {
-        return event;
+        return currentEvent;
     }
 
     public void changeCurrentState(State state) {
