@@ -7,6 +7,7 @@ import common.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import state.InvalidStateTransitionException;
+import state.SendingException;
 import state.State;
 
 /**
@@ -26,7 +27,10 @@ public enum MessageSource implements Command {
             ResultWrapper<DTO> dto = stateHandler.doTransition(s);
             log.info("MessageSource.onMessage() Successful transition from " + old + " to " + s.getState() + ".");
         } catch (InvalidStateTransitionException ex) {
-            log.trace("MessageSource.onMessage() Exception=" + ex.getMessage());
+            log.trace("MessageSource.onMessage() InvalidStateTransitionException=" + ex.getMessage());
+            log.info("MessageSource.onMessage() Failed transition from " + stateHandler.getCurrentState() + " to " + s.getState() + ".");
+        } catch (SendingException ex) {
+            log.trace("MessageSource.onMessage() SendingException=" + ex.getMessage());
             log.info("MessageSource.onMessage() Failed transition from " + stateHandler.getCurrentState() + " to " + s.getState() + ".");
         }
     }

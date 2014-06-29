@@ -7,7 +7,8 @@ import state.State;
 import java.util.Date;
 
 /**
- * Created by davidhislop on 2014/06/25.
+ * Created by david.hislop@korwe.com on 2014/06/25.
+ *
  */
 
 public class Event {
@@ -24,10 +25,9 @@ public class Event {
 
     @Override
     public String toString() {
-        StringBuilder result = new StringBuilder();
-        result.append("From: " + from +" To: " + to + " Date: " + date.toString());
+        String result = "From: " + from +" To: " + to + " Date: " + date.toString();
 
-        return result.toString();
+        return result;
     }
 
 }

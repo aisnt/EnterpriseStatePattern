@@ -2,6 +2,8 @@ package state;
 
 import command.DTO;
 import command.ResultWrapper;
+import command.TransferApi;
+import command.TransferApiImpl;
 import common.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,19 +18,17 @@ public class StateFinal extends State {
         super( StateDescriptor.Final);
     }
     @Override
-    public ResultWrapper<DTO> doTransition(Message message)  throws InvalidStateTransitionException{
-        log.trace("StateFinal.doTransition() From " + this.getState() + " to " + message.getState() +".");
-        throw new InvalidStateTransitionException("StateFinal.doTransition() Failed From " + this.getState() + " to " + message.getState() +".");
+    public ResultWrapper<DTO> doTransition(Message message)  throws InvalidStateTransitionException, SendingException{
+        log.trace("StateFinal.sendMessage() From " + this.getState() + " to " + message.getState() +".");
+        throw new InvalidStateTransitionException("StateFinal.sendMessage() Failed From " + this.getState() + " to " + message.getState() +".");
     }
 
     @Override
-    protected Boolean mooreTransition(String payload) {
-        System.out.println("StateFinal.mooreTransition() Output -> " + payload);
-        return true;
-    }
-
-    @Override
-    protected Boolean mealyTransition() {
-        return null;
+    protected ResultWrapper<DTO> sendMessage(String payload) {
+        System.out.println("StateFinal.sendMessage() Output -> " + payload);
+        TransferApi transferApi = new TransferApiImpl();
+        DTO dto =  transferApi.get(payload);
+        ResultWrapper<DTO> dtos = new ResultWrapper<DTO>(dto);
+        return dtos;
     }
 }

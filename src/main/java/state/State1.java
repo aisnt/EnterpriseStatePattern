@@ -2,6 +2,8 @@ package state;
 
 import command.DTO;
 import command.ResultWrapper;
+import command.TransferApi;
+import command.TransferApiImpl;
 import common.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,32 +17,36 @@ public class State1 extends State {
         super( StateDescriptor.State1);
     }
 
+    /*
+    * part 2: This is an implementation from State
+    *
+    * This is where the states are implictly wired.
+    * TODO it would be nice to make it explicitly injected.
+    */
     @Override
-    public ResultWrapper<DTO> doTransition(Message message)  throws InvalidStateTransitionException {
-        log.trace("State1.doTransition() From " + this.getState() + " to " + message.getState() +".");
+    public ResultWrapper<DTO> doTransition(Message message)  throws InvalidStateTransitionException, SendingException {
+        log.trace("State1.sendMessage() From " + this.getState() + " to " + message.getState() +".");
         switch (message.getState()) {
             case State2: {
-                if (!transition(StateDescriptor.State2, message.getPayload())) {
-                    throw new InvalidStateTransitionException("State1.doTransition() Failed from " + this.getState() + " to " + message.getState() +".");
-                }
-                break;
+                ResultWrapper<DTO> dtos = transition(StateDescriptor.State2, message.getPayload());
+                return dtos;
             }
 
             default: {
-                throw new InvalidStateTransitionException("State1.doTransition() No transition from " + this.getState() + " to " + message.getState() +".");
+                throw new InvalidStateTransitionException("State1.sendMessage() No transition from " + this.getState() + " to " + message.getState() +".");
             }
         }
-        return new ResultWrapper<DTO>(new DTO());
     }
 
+    /*
+    * part 5:  This is an implementation from State
+    */
     @Override
-    protected Boolean mooreTransition(String payload) {
-        System.out.println("State1.mooreTransition() Output -> " + payload);
-        return true;
-    }
-
-    @Override
-    protected Boolean mealyTransition() {
-        return null;
+    protected ResultWrapper<DTO> sendMessage(String payload) {
+        System.out.println("State1.sendMessage() Output -> " + payload);
+        TransferApi transferApi = new TransferApiImpl();
+        DTO dto =  transferApi.get(payload);
+        ResultWrapper<DTO> dtos = new ResultWrapper<DTO>(dto);
+        return dtos;
     }
 }

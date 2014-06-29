@@ -2,6 +2,8 @@ package state;
 
 import command.DTO;
 import command.ResultWrapper;
+import command.TransferApi;
+import command.TransferApiImpl;
 import common.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,31 +18,26 @@ public class State2 extends State {
         super( StateDescriptor.State2);
     }
     @Override
-    public ResultWrapper<DTO> doTransition(Message message)  throws InvalidStateTransitionException {
-        log.trace("State2.doTransition() From " + this.getState() + " to " + message.getState() +".");
+    public ResultWrapper<DTO> doTransition(Message message)  throws InvalidStateTransitionException, SendingException {
+        log.trace("State2.sendMessage() From " + this.getState() + " to " + message.getState() +".");
         switch (message.getState()) {
             case State3: {
-                if (!transition(StateDescriptor.State3, message.getPayload())){
-                    throw new InvalidStateTransitionException("State2.doTransition() Failed from " + this.getState() + " to " + message.getState() +".");
-                }
-                break;
+                ResultWrapper<DTO> dtos = transition(StateDescriptor.State3, message.getPayload());
+                return dtos;
             }
 
             default: {
-                throw new InvalidStateTransitionException("State2.doTransition() Failed from " + this.getState() + " to " + message.getState() +".");
+                throw new InvalidStateTransitionException("State2.sendMessage() Failed from " + this.getState() + " to " + message.getState() +".");
             }
         }
-        return new ResultWrapper<DTO>(new DTO());
     }
 
     @Override
-    protected Boolean mooreTransition(String payload) {
-        System.out.println("State2.mooreTransition() Output -> " + payload);
-        return true;
-    }
-
-    @Override
-    protected Boolean mealyTransition() {
-        return null;
+    protected ResultWrapper<DTO> sendMessage(String payload) {
+        System.out.println("State2.sendMessage() Output -> " + payload);
+        TransferApi transferApi = new TransferApiImpl();
+        DTO dto =  transferApi.get(payload);
+        ResultWrapper<DTO> dtos = new ResultWrapper<DTO>(dto);
+        return dtos;
     }
 }
