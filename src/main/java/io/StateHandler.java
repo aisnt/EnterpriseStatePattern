@@ -5,10 +5,7 @@ import command.ResultWrapper;
 import common.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import state.InvalidStateTransitionException;
-import state.SendingException;
-import state.State;
-import state.StateInitial;
+import state.*;
 
 import java.util.Date;
 
@@ -25,7 +22,7 @@ public enum StateHandler {
     private Event currentEvent;
     final private Boolean stateLock = false;
     StateHandler() {
-        currentStateObject = new StateInitial();
+        currentStateObject = State.create(StateDescriptor.Initial);
         currentEvent = new Event(null, currentStateObject.getState(), new Date());
     }
 
@@ -34,7 +31,7 @@ public enum StateHandler {
             return false;
         }
         synchronized(stateLock) {
-            State.StateDescriptor oldState = currentStateObject.getState();
+            StateDescriptor oldState = currentStateObject.getState();
             log.debug("StateHandler.setState() before changeCurrentState from " + oldState + " to " + state.getState() + ".");
             currentStateObject = state;
             currentEvent = new Event(oldState, state.getState(), new Date());
@@ -48,13 +45,13 @@ public enum StateHandler {
 
     public void changeCurrentState(State state) {
         synchronized(stateLock) {
-            State.StateDescriptor oldState = currentStateObject.getState();
+            StateDescriptor oldState = currentStateObject.getState();
             log.debug("StateHandler.changeCurrentState() before changeCurrentState from " + oldState + " to " + state.getState() + ".");
             setState(state);
         }
     }
 
-    public State.StateDescriptor getCurrentState() {
+    public StateDescriptor getCurrentState() {
         synchronized(stateLock) {
             return currentStateObject.getState();
         }

@@ -9,57 +9,32 @@ import org.slf4j.LoggerFactory;
 import state.dynamic.InvalidStateException;
 import state.dynamic.StateFactory;
 
+import java.io.IOException;
+
 /**
  * Created by david.hislop@korwe.com on 2014/06/23.
  *
  */
 public abstract class State {
     final static Logger log = LoggerFactory.getLogger(State.class);
+
     public State(StateDescriptor stateDescriptor) {
         log.trace("State.ctor() for " + stateDescriptor);
         currentState = stateDescriptor;
     }
 
-    /*TODO OK so each State is implemented separately. But this is still ugly. We would like a default:
-    StateHandler stateIOHandler = StateHandler.INSTANCE;
-    */
     public static State create(StateDescriptor stateDescriptor) {
         log.trace("State.create() " + stateDescriptor);
 
         try {
-            State s = new StateFactory(stateDescriptor);
+            State s = StateFactory.INSTANCE.create(stateDescriptor);
             return s;
-        }
-        catch (InvalidStateException ex) {
+        } catch (IOException ex) {
+            log.error("State.create() IOException. State.create() " + ex.getMessage());
+        } catch (InvalidStateException ex) {
             log.error("State.create() InvalidStateException. State.create() " + ex.getMessage());
         }
-        catch (Exception ex) {
-            log.error("State.create() InvalidStateException. State.create() " + ex.getMessage());
-        }
-      /*  switch (stateDescriptor) {
-            case State1: return new State1();
-            case State2: return new State2();
-            case State3: return new State3();
-            case Final: return new StateFinal();
-            case Initial: return new StateInitial();
-            default:
-        }*/
         return null;
-    }
-
-    //TODO Hmm? Inject. The *abstract* base class should not need to know.
-    public enum StateDescriptor {Initial, State1, State2, State3, Final, Max;
-
-        public static state.State.StateDescriptor getStateDescriptor(int stateIndex) throws InvalidStateException {
-            if ( (stateIndex >= State.StateDescriptor.Max.ordinal()) || (stateIndex < 0)) {
-                throw new InvalidStateException("Invalid State row");
-            }
-            return StateDescriptor.values()[stateIndex]; //Expensive
-        }
-
-        public static state.State.StateDescriptor getStateDescriptor(String state) {
-            return StateDescriptor.valueOf(state);
-        }
     }
 
     public StateDescriptor getState() {
@@ -68,7 +43,6 @@ public abstract class State {
 
     private StateDescriptor currentState ;
 
-    //TODO use DTO or loose
     /*
     part 1: This is called by the StateHandler and is implemented in all the derived classes
      */

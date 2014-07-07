@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import state.State;
+import state.StateDescriptor;
 
 import java.util.Iterator;
 
@@ -30,7 +31,7 @@ public class MessageListenerTest  {
         Util.setProperties("src/test/resources/state.properties");
 
         //Start from any state
-        if (!StateHandler.INSTANCE.setState(State.create(State.StateDescriptor.State2))) { //TODO parameterise
+        if (!StateHandler.INSTANCE.setState(State.create(StateDescriptor.State2))) { //TODO parameterise
             log.error("setState failed.");
             fail();
         }
@@ -41,7 +42,7 @@ public class MessageListenerTest  {
     @Test
     public void testListener() throws Exception {
         log.trace("MessageListenerTest.testMain()");
-        while (StateHandler.INSTANCE.getCurrentState() != State.StateDescriptor.Final) {
+        while (StateHandler.INSTANCE.getCurrentState() != StateDescriptor.Final) {
             try {
                 int milliseconds = Random.random(0, Util.getIntProperty("PutMessageWait"));
                 log.trace("MessageListenerTest.testMain() Waiting " + milliseconds + " ms in state " + StateHandler.INSTANCE.getCurrentState());
@@ -66,8 +67,8 @@ public class MessageListenerTest  {
             assertNotNull("No from transition", event.from);
             assertNotNull("No to transition", event.date);
             eventOld = event;
-        };
-        assertEquals(eventOld.to, State.StateDescriptor.Final);
+        }
+        assertEquals(eventOld.to, StateDescriptor.Final);
     }
 
     @Test
@@ -84,12 +85,12 @@ public class MessageListenerTest  {
         log.trace("MessageListenerTest.putMessage() " + message.getState() + " " + message.getPayload());
     }
 
-    private state.State.StateDescriptor makeRandomState() {
+    private StateDescriptor makeRandomState() {
         log.trace("MessageListenerTest.makeRandomState() ");
-        int stateIndex = Random.random(0, State.StateDescriptor.Max.ordinal()-1);
-        state.State.StateDescriptor stateDescriptor = null;
+        int stateIndex = Random.random(0, StateDescriptor.Max.ordinal()-1);
+        StateDescriptor stateDescriptor = null;
         try {
-            stateDescriptor = State.StateDescriptor.getStateDescriptor(stateIndex);
+            stateDescriptor = StateDescriptor.getStateDescriptor(stateIndex);
         }
         catch (Exception ex) {
             log.error("MessageListenerTest.makeRandomState() ", ex);

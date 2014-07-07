@@ -5,81 +5,55 @@ import command.ResultWrapper;
 import command.TransferApi;
 import command.TransferApiImpl;
 import common.Message;
+import common.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import state.InvalidStateTransitionException;
 import state.SendingException;
 import state.State;
+import state.StateDescriptor;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
 /**
  * Created by david.hislop@korwe.com on 2014/06/23.
  */
-public class StateFactory extends State {
-    final static Logger log = LoggerFactory.getLogger(StateFactory.class);
-    public StateFactory(StateDescriptor s) throws IOException, InvalidStateException {
-        super( s );
-        log.trace("StateFactory.ctor() start ..." );
-        if (transitions == null) {
-            transitions = createValidTransitionTable();
+public enum StateFactory {
+    INSTANCE;
+
+    Logger log = LoggerFactory.getLogger(this.getClass());
+
+    StateFactory()  {
+        log.trace("StateFactory.ctor() start ...");
+        try {
+            String fileNameValidTransitionTable = Util.getStringProperty("FileNameValidTransitionTable");
+            transitions = createValidTransitionTable(fileNameValidTransitionTable);
+        } catch ( IOException e) {
+            log.error("StateFactory.ctor() IOException ", e);
+            throw new ExceptionInInitializerError(e);
+        } catch (InvalidStateException e ){
+            log.error("StateFactory.ctor() InvalidStateException ", e);
+            throw new ExceptionInInitializerError(e);
         }
-        log.trace("StateFactory.ctor() ... end" );
+        log.trace("StateFactory.ctor() ... end");
     }
 
-    @Override
-    public ResultWrapper<DTO> doTransition(Message message)  throws InvalidStateTransitionException, SendingException {
-        log.trace("StateFactory.sendMessage() From " + this.getState() + " to " + message.getState() +".");
+    private Node[][] transitions = null;
 
-        ResultWrapper<DTO> dtos=null;
-        if (validatePolicy(this.getState(), message.getState())) {
-            dtos = transition(message.getState(), message.getPayload());
-        }
-        else {
-            throw new InvalidStateTransitionException("State1.sendMessage() No transition from " + this.getState() + " to " + message.getState() +".");
-        }
-
-        return dtos;
-    }
-
-    /*
-    * part 5:  This is an implementation from State
-    */
-    @Override
-    protected ResultWrapper<DTO> sendMessage(String payload) {
-        log.trace("ResultWrapper.sendMessage() Output -> " + payload);
-        TransferApi transferApi = new TransferApiImpl();
-        DTO dto =  transferApi.get(payload);
-        ResultWrapper<DTO> dtos = new ResultWrapper<DTO>(dto);
-        return dtos;
-    }
-
-    private Boolean validatePolicy(StateDescriptor thisState, StateDescriptor nextState) {
-        log.trace("ResultWrapper.validatePolicy() from " + thisState.name() + " to " + nextState.name() + ".");
-        int row = thisState.ordinal();
-        int col = nextState.ordinal();
-        log.debug("ResultWrapper.validatePolicy() from " + row + " to " + col + ".");
-        log.debug("ResultWrapper.validatePolicy() from " + transitions[col][row].from +" to " + transitions[col][row].to + " val " + transitions[col][row].doIt + ".");
-        return transitions[col][row].doIt;
-    }
-
-    private static  Node[][] transitions = null;
-    private static Node[][] createValidTransitionTable() throws IOException, InvalidStateException {
-        String fileName = "src/main/resources/transitions.table";   //TODO properties
+    private Node[][] createValidTransitionTable(String fileName) throws IOException, InvalidStateException {
         log.trace("ResultWrapper.createValidTransitionTable() -> " + fileName);
-        FileReader fr = new FileReader(fileName);
-        if (fr == null) {
-            throw new FileNotFoundException();
-        }
-        BufferedReader br = new BufferedReader(fr);
-        String s = br.readLine();
+        FileReader fileReader = new FileReader(fileName);
+        BufferedReader bufferedReader = new BufferedReader(fileReader);
+        String s = bufferedReader.readLine();
         String[] colNames = s.split(",");
-        int len = colNames.length-1;
-        Node[][] tt = new Node[len][len];
+        int len = colNames.length - 1;
+        Node[][] transitionTable = new Node[len][len];
         int row = 0;
-        while ((s = br.readLine()) != null) {
+        while ((s = bufferedReader.readLine()) != null) {
             String[] vals = s.split(",");
             List<String> vs = Arrays.asList(vals);
             int col = 0;
@@ -87,40 +61,67 @@ public class StateFactory extends State {
             for (String v : vs) {
                 if (col == 0) {
                     rowName = v;
-                }
-                else {
+                } else {
                     if (v.contains("Y")) {
-                        Node one = new Node(col-1, row);
-                        tt[row][col-1] = one;
-                    }
-                    else {
-                        Node two = new Node(colNames[col], rowName, false);
-                        tt[row][col-1] = two;
+                        Node node = new Node(col - 1, row);
+                        transitionTable[row][col - 1] = node;
+                    } else {
+                        Node node = new Node(colNames[col], rowName, false);
+                        transitionTable[row][col - 1] = node;
                     }
                 }
                 col++;
             }
             row++;
         }
-        fr.close();
-        return tt;
+        fileReader.close();
+        return transitionTable;
+    }
+
+    public Base create(StateDescriptor s) throws IOException, InvalidStateException {
+        return new Base(s);
+    }
+
+    public class Base extends State {
+        public Base(StateDescriptor s) throws IOException, InvalidStateException {
+            super(s);
+            log.trace("StateFactory.Base.ctor() start.");
+        }
+
+        @Override
+        public ResultWrapper<DTO> doTransition(Message message) throws InvalidStateTransitionException, SendingException {
+            log.trace("StateFactory.Base.doTransition() From " + this.getState() + " to " + message.getState() + ".");
+
+            ResultWrapper<DTO> dtos = null;
+            if (validatePolicy(this.getState(), message.getState())) {
+                dtos = transition(message.getState(), message.getPayload());
+            } else {
+                throw new InvalidStateTransitionException("StateFactory.Base.doTransition() No transition from " + this.getState() + " to " + message.getState() + ".");
+            }
+
+            return dtos;
+        }
+
+        /*
+        * part 5:  This is an implementation from State
+        */
+        @Override
+        protected ResultWrapper<DTO> sendMessage(String payload) {
+            log.trace("StateFactory.Base.sendMessage() Output -> " + payload);
+            TransferApi transferApi = new TransferApiImpl();
+            DTO dto = transferApi.get(payload);
+            ResultWrapper<DTO> dtos = new ResultWrapper<>(dto);
+            return dtos;
+        }
+
+        private Boolean validatePolicy(StateDescriptor thisState, StateDescriptor nextState) {
+            log.trace("StateFactory.Base.validatePolicy() from " + thisState.name() + " to " + nextState.name() + ".");
+            int row = thisState.ordinal();
+            int col = nextState.ordinal();
+            log.debug("StateFactory.Base.validatePolicy() from " + row + " to " + col + ".");
+            log.debug("StateFactory.Base.validatePolicy() from " + transitions[col][row].from + " to " + transitions[col][row].to + " val " + transitions[col][row].doIt + ".");
+            return transitions[col][row].doIt;
+        }
     }
 }
 
-class Node {
-    public Node(String from, String to, Boolean val) {
-        this.from = State.StateDescriptor.getStateDescriptor(from);
-        this.to = State.StateDescriptor.getStateDescriptor(to);
-        doIt = val;
-    }
-
-    public Node(int col, int row) throws InvalidStateException {
-        this.from = State.StateDescriptor.getStateDescriptor(col);
-        this.to = State.StateDescriptor.getStateDescriptor(row);
-        doIt = true;
-    }
-
-    public Boolean doIt = false;
-    public State.StateDescriptor from;
-    public State.StateDescriptor to;
-}

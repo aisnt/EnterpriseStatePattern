@@ -7,6 +7,7 @@ import io.StateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import state.State;
+import state.StateDescriptor;
 
 /**
  * Created by david.hislop@korwe.com on 2014/06/22.
@@ -19,7 +20,7 @@ public class Main {
         log.trace("Main.main()");
         setUp();
         int putMessageWait = Util.getIntProperty("PutMessageWait");
-        while (StateHandler.INSTANCE.getCurrentState() != State.StateDescriptor.Final) {
+        while (StateHandler.INSTANCE.getCurrentState() != StateDescriptor.Final) {
             try {
                 int milliseconds = (int) (Math.random() * putMessageWait);
                 log.trace("Main.main() Waiting " + milliseconds + " ms in state " + StateHandler.INSTANCE.getCurrentState());
@@ -37,7 +38,7 @@ public class Main {
         Util.setProperties("src/main/resources/state.properties");
 
         //Start from any state
-        StateHandler.INSTANCE.setState(State.create(State.StateDescriptor.State2));
+        StateHandler.INSTANCE.setState(State.create(StateDescriptor.State2));
         messageListener = new MessageListenerImpl( MessageSource.INSTANCE );
         messageListener.start();
     }
@@ -50,10 +51,10 @@ public class Main {
         log.trace("Main.putMessage() " + message.getState() + " " + message.getPayload() );
     }
 
-    private static state.State.StateDescriptor makeRandomState() {
+    private static StateDescriptor makeRandomState() {
         log.trace("Main.makeRandomState() ");
-        int stateIndex = (int) (Math.random()* State.StateDescriptor.Max.ordinal());
-        state.State.StateDescriptor stateDescriptor =  state.State.StateDescriptor.values()[stateIndex]; //Expensive
+        int stateIndex = (int) (Math.random()* StateDescriptor.Max.ordinal());
+        StateDescriptor stateDescriptor =  StateDescriptor.values()[stateIndex]; //Expensive
         log.trace("Main.makeRandomState() " + stateIndex + "->" + stateDescriptor);
         return stateDescriptor;
     }
