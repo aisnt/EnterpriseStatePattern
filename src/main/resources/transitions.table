@@ -1,0 +1,6 @@
+,Initial,State1,State2,State3,Final
+Initial,N,N,N,N,N
+State1,Y,N,N,Y,N
+State2,N,Y,N,N,N
+State3,N,N,Y,N,N
+Final,N,N,N,Y,N
