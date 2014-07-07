@@ -20,7 +20,7 @@ public class State1 extends State {
     /*
     * part 2: This is an implementation from State
     *
-    * This is where the states are implictly wired.
+    * This is where the states are implicitly wired.
     * TODO it would be nice to make it explicitly injected.
     */
     @Override

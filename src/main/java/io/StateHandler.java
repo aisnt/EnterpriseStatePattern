@@ -29,13 +29,17 @@ public enum StateHandler {
         currentEvent = new Event(null, currentStateObject.getState(), new Date());
     }
 
-    public void setState(State state) {
+    public Boolean setState(State state) {
+        if (state == null) {
+            return false;
+        }
         synchronized(stateLock) {
             State.StateDescriptor oldState = currentStateObject.getState();
             log.debug("StateHandler.setState() before changeCurrentState from " + oldState + " to " + state.getState() + ".");
             currentStateObject = state;
             currentEvent = new Event(oldState, state.getState(), new Date());
         }
+        return true;
     }
 
     public Event getLastEvent() {

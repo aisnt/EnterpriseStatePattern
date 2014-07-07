@@ -6,6 +6,8 @@ import common.Message;
 import io.StateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import state.dynamic.InvalidStateException;
+import state.dynamic.StateFactory;
 
 /**
  * Created by david.hislop@korwe.com on 2014/06/23.
@@ -23,19 +25,42 @@ public abstract class State {
     */
     public static State create(StateDescriptor stateDescriptor) {
         log.trace("State.create() " + stateDescriptor);
-        switch (stateDescriptor) {
+
+        try {
+            State s = new StateFactory(stateDescriptor);
+            return s;
+        }
+        catch (InvalidStateException ex) {
+            log.error("State.create() InvalidStateException. State.create() " + ex.getMessage());
+        }
+        catch (Exception ex) {
+            log.error("State.create() InvalidStateException. State.create() " + ex.getMessage());
+        }
+      /*  switch (stateDescriptor) {
             case State1: return new State1();
             case State2: return new State2();
             case State3: return new State3();
             case Final: return new StateFinal();
             case Initial: return new StateInitial();
             default:
-        }
+        }*/
         return null;
     }
 
     //TODO Hmm? Inject. The *abstract* base class should not need to know.
-    public enum StateDescriptor {Initial, State1, State2, State3, Final, Max}
+    public enum StateDescriptor {Initial, State1, State2, State3, Final, Max;
+
+        public static state.State.StateDescriptor getStateDescriptor(int stateIndex) throws InvalidStateException {
+            if ( (stateIndex >= State.StateDescriptor.Max.ordinal()) || (stateIndex < 0)) {
+                throw new InvalidStateException("Invalid State row");
+            }
+            return StateDescriptor.values()[stateIndex]; //Expensive
+        }
+
+        public static state.State.StateDescriptor getStateDescriptor(String state) {
+            return StateDescriptor.valueOf(state);
+        }
+    }
 
     public StateDescriptor getState() {
         return currentState;
