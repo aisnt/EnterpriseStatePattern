@@ -2,7 +2,7 @@ package state.dynamic;
 
 import org.junit.Assert;
 import org.junit.Test;
-import state.StateDescriptorX;
+import state.StateDescriptorFactory;
 
 public class NodeTest {
     @Test
@@ -15,7 +15,7 @@ public class NodeTest {
 
     @Test(expected=InvalidStateException.class)
     public void testNumericCtorFail() throws InvalidStateException {
-        int col = StateDescriptorX.INSTANCE.Max();
+        int col = StateDescriptorFactory.INSTANCE.Max();
         int row = 0;
         new Node(col, row);
         Assert.fail();
@@ -23,8 +23,8 @@ public class NodeTest {
 
     @Test
     public void testNumericCtor() throws InvalidStateException {
-        int col = StateDescriptorX.INSTANCE.get("Initial").ordinal;
-        int row = StateDescriptorX.INSTANCE.get("State2").ordinal;
+        int col = StateDescriptorFactory.INSTANCE.get("isInitial").ordinal;
+        int row = StateDescriptorFactory.INSTANCE.get("State2").ordinal;
         Node node = null;
         try {
             node = new Node(col, row);
@@ -36,8 +36,8 @@ public class NodeTest {
 
     @Test
     public void testStringCtor() throws InvalidStateException {
-        String s1 = StateDescriptorX.INSTANCE.get("Initial").name;
-        String s2 = StateDescriptorX.INSTANCE.get("Initial").name;
+        String s1 = StateDescriptorFactory.INSTANCE.get("isInitial").name;
+        String s2 = StateDescriptorFactory.INSTANCE.get("isInitial").name;
         Node node = new Node(s1, s2, true);
         Assert.assertNotNull( node );
     }
@@ -45,7 +45,7 @@ public class NodeTest {
     @Test(expected=InvalidStateException.class)
     public void testStringCtorFail() throws InvalidStateException  {
         String s1 = "nonsense";
-        String s2 = StateDescriptorX.INSTANCE.get("Final").name;
+        String s2 = StateDescriptorFactory.INSTANCE.get("isFinal").name;
         new Node(s1, s2, true);
         Assert.fail();
     }

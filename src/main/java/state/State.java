@@ -18,12 +18,12 @@ import java.io.IOException;
 public abstract class State {
     final static Logger log = LoggerFactory.getLogger(State.class);
 
-    public State(StateDescriptorX.StateDescriptor stateDescriptor) {
+    public State(StateDescriptorFactory.StateDescriptor stateDescriptor) {
         log.trace("State.ctor() for " + stateDescriptor.name);
         currentState = stateDescriptor;
     }
 
-    public static State create(StateDescriptorX.StateDescriptor stateDescriptor) {
+    public static State create(StateDescriptorFactory.StateDescriptor stateDescriptor) {
         log.trace("State.create() " + stateDescriptor.name);
 
         try {
@@ -37,11 +37,11 @@ public abstract class State {
         return null;
     }
 
-    public StateDescriptorX.StateDescriptor getState() {
+    public StateDescriptorFactory.StateDescriptor getState() {
         return currentState;
     }
 
-    private StateDescriptorX.StateDescriptor currentState ;
+    private StateDescriptorFactory.StateDescriptor currentState ;
 
     /*
     part 1: This is called by the StateHandler and is implemented in all the derived classes
@@ -56,7 +56,7 @@ public abstract class State {
     *
     * By now the transition is permitted
     * */
-    protected ResultWrapper<DTO> transition(StateDescriptorX.StateDescriptor stateDescriptor, String message) throws SendingException {
+    protected ResultWrapper<DTO> transition(StateDescriptorFactory.StateDescriptor stateDescriptor, String message) throws SendingException {
         log.trace("State.transition() transition from " + this.getState() + " to " + stateDescriptor + ".");
         log.trace("State.transition() Before class Name = " + this.getClass().getName() + ".");
         StateHandler stateHandler = StateHandler.INSTANCE;

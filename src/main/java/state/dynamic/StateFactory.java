@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import state.InvalidStateTransitionException;
 import state.SendingException;
 import state.State;
-import state.StateDescriptorX;
+import state.StateDescriptorFactory;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -78,12 +78,12 @@ public enum StateFactory {
         return transitionTable;
     }
 
-    public Base create(StateDescriptorX.StateDescriptor s) throws IOException, InvalidStateException {
+    public Base create(StateDescriptorFactory.StateDescriptor s) throws IOException, InvalidStateException {
         return new Base(s);
     }
 
     public class Base extends State {
-        public Base(StateDescriptorX.StateDescriptor s) throws IOException, InvalidStateException {
+        public Base(StateDescriptorFactory.StateDescriptor s) throws IOException, InvalidStateException {
             super(s);
             log.trace("StateFactory.Base.ctor() start.");
         }
@@ -114,7 +114,7 @@ public enum StateFactory {
             return dtos;
         }
 
-        private Boolean validatePolicy(StateDescriptorX.StateDescriptor thisState, StateDescriptorX.StateDescriptor nextState) {
+        private Boolean validatePolicy(StateDescriptorFactory.StateDescriptor thisState, StateDescriptorFactory.StateDescriptor nextState) {
             log.trace("StateFactory.Base.validatePolicy() from " + thisState.name + " to " + nextState.name + ".");
             int row = thisState.ordinal;
             int col = nextState.ordinal;

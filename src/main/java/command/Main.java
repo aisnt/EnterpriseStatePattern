@@ -7,7 +7,7 @@ import io.StateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import state.State;
-import state.StateDescriptorX;
+import state.StateDescriptorFactory;
 import state.dynamic.InvalidStateException;
 
 /**
@@ -21,7 +21,7 @@ public class Main {
         log.trace("Main.main()");
         setUp();
         int putMessageWait = Util.getIntProperty("PutMessageWait");
-        while ( StateDescriptorX.INSTANCE.Final(StateHandler.INSTANCE.getCurrentState())) {
+        while ( StateDescriptorFactory.INSTANCE.isFinal(StateHandler.INSTANCE.getCurrentState())) {
             try {
                 int milliseconds = (int) (Math.random() * putMessageWait);
                 log.trace("Main.main() Waiting " + milliseconds + " ms in state " + StateHandler.INSTANCE.getCurrentState());
@@ -39,7 +39,7 @@ public class Main {
         Util.setProperties("src/main/resources/state.properties");
 
         //Start from any state
-        StateHandler.INSTANCE.setState(State.create(StateDescriptorX.INSTANCE.get("State2")));
+        StateHandler.INSTANCE.setState(State.create(StateDescriptorFactory.INSTANCE.get("State2")));
         messageListener = new MessageListenerImpl( MessageSource.INSTANCE );
         messageListener.start();
     }
@@ -52,10 +52,10 @@ public class Main {
         log.trace("Main.putMessage() " + message.getState() + " " + message.getPayload() );
     }
 
-    private static StateDescriptorX.StateDescriptor makeRandomState() throws InvalidStateException {
+    private static StateDescriptorFactory.StateDescriptor makeRandomState() throws InvalidStateException {
         log.trace("Main.makeRandomState() ");
-        int stateIndex = (int) (Math.random()* StateDescriptorX.INSTANCE.Max());
-        StateDescriptorX.StateDescriptor stateDescriptor =  StateDescriptorX.INSTANCE.get(stateIndex);
+        int stateIndex = (int) (Math.random()* StateDescriptorFactory.INSTANCE.Max());
+        StateDescriptorFactory.StateDescriptor stateDescriptor =  StateDescriptorFactory.INSTANCE.get(stateIndex);
         log.trace("Main.makeRandomState() " + stateIndex + "->" + stateDescriptor);
         return stateDescriptor;
     }

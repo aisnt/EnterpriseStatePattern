@@ -10,7 +10,7 @@ import java.util.ListIterator;
  * Created by david.hislop@korwe.com on 2014/07/07.
  */
 /*
-public enum StateDescriptor {Initial, State1, State2, State3, Final, Max;
+public enum StateDescriptor {isInitial, State1, State2, State3, isFinal, Max;
 
     public static state.StateDescriptor getStateDescriptor(int stateIndex) throws InvalidStateException {
         if ( (stateIndex >= StateDescriptor.Max.ordinal()) || (stateIndex < 0)) {
@@ -26,26 +26,27 @@ public enum StateDescriptor {Initial, State1, State2, State3, Final, Max;
 
 */
 
-public enum StateDescriptorX {INSTANCE;
-    private List<StateDescriptor> ccc = new ArrayList<>();
+public enum StateDescriptorFactory {
+    INSTANCE;
+    private List<StateDescriptor> stateDescriptors = new ArrayList<>();
 
     public int Max() {
-        return ccc.size();
+        return stateDescriptors.size();
     }
 
-    StateDescriptorX() {
-        ccc.add(new StateDescriptor("Initial", 0));
-        ccc.add(new StateDescriptor("State1", 1));
-        ccc.add(new StateDescriptor("State2", 2));
-        ccc.add(new StateDescriptor("State3", 3));
-        ccc.add(new StateDescriptor("Final", 4));
+    StateDescriptorFactory() {
+        stateDescriptors.add(new StateDescriptor("Initial", 0));
+        stateDescriptors.add(new StateDescriptor("State1", 1));
+        stateDescriptors.add(new StateDescriptor("State2", 2));
+        stateDescriptors.add(new StateDescriptor("State3", 3));
+        stateDescriptors.add(new StateDescriptor("Final", 4));
     }
 
     public StateDescriptor get(int stateIndex) throws InvalidStateException {
         if ((stateIndex >= Max()) || (stateIndex < 0)) {
             throw new InvalidStateException("Invalid State stateIndex = " + stateIndex + ".");
         }
-        ListIterator l = ccc.listIterator();
+        ListIterator l = stateDescriptors.listIterator();
         while(l.hasNext()) {
             StateDescriptor ll = (StateDescriptor) l.next();
             if ( ll.ordinal == stateIndex ) {
@@ -56,7 +57,7 @@ public enum StateDescriptorX {INSTANCE;
     }
 
     public StateDescriptor get(String state) throws InvalidStateException {
-        ListIterator l = ccc.listIterator();
+        ListIterator l = stateDescriptors.listIterator();
         while(l.hasNext()) {
             StateDescriptor ll = (StateDescriptor) l.next();
             if ( ll.name.contains(state) ) {
@@ -66,20 +67,31 @@ public enum StateDescriptorX {INSTANCE;
         throw new InvalidStateException();
     }
 
-    public Boolean Initial(StateDescriptor s) {
-        return s.name.contains(ccc.get(0).name);
+    public Boolean isInitial(StateDescriptor state) {
+        return state.stateType == StateType.Initial;
     }
 
-    public Boolean Final(StateDescriptor s) {
-        return s.name.contains(ccc.get(4).name);//TODO
+    public Boolean isFinal(StateDescriptor state) {
+        return state.stateType == StateType.Final;
     }
 
+    enum StateType {Initial,Final,Normal};
     public class StateDescriptor {
+        public StateType stateType;
         public String name;
         public int ordinal;
         public StateDescriptor(String s, int i) {
             name = s;
             ordinal = i;
+            if (s.contains("Final")) {
+                stateType = StateType.Final;
+            } else
+            if (s.contains("Initial")) {
+                stateType = StateType.Initial;
+            }
+            else {
+                stateType = StateType.Normal;
+            }
         }
     }
 }

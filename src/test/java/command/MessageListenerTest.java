@@ -12,13 +12,11 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import state.State;
-import state.StateDescriptorX;
+import state.StateDescriptorFactory;
 
 import java.util.Iterator;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * Created by david.hislop@korwe.com on 2014/06/21.
@@ -33,7 +31,7 @@ public class MessageListenerTest  {
         Util.setProperties("src/test/resources/state.properties");
 
         //Start from any state
-        if (!StateHandler.INSTANCE.setState(State.create(StateDescriptorX.INSTANCE.get("State2")))) { //TODO parameterise
+        if (!StateHandler.INSTANCE.setState(State.create(StateDescriptorFactory.INSTANCE.get("State2")))) { //TODO parameterise
             log.error("setState failed.");
             fail();
         }
@@ -47,7 +45,7 @@ public class MessageListenerTest  {
         log.trace("MessageListenerTest.testListener()");
         int period = Util.getIntProperty("PutMessageWait");
         log.trace("MessageListenerTest.testListener() period = " + period + ".");
-        while ( !StateDescriptorX.INSTANCE.Final(StateHandler.INSTANCE.getCurrentState())) {
+        while ( !StateDescriptorFactory.INSTANCE.isFinal(StateHandler.INSTANCE.getCurrentState())) {
             try {
                 int milliseconds = Random.random(0, period);
                 log.trace("MessageListenerTest.testListener() Waiting " + milliseconds + " ms in state " + StateHandler.INSTANCE.getCurrentState().name );
@@ -74,7 +72,7 @@ public class MessageListenerTest  {
             eventOld = event;
         }
         assertNotNull("EventOld not Null", eventOld);
-        assertEquals(eventOld.to, StateDescriptorX.INSTANCE.get("Final"));
+        assertTrue(StateDescriptorFactory.INSTANCE.isFinal(eventOld.to));
     }
 
     @Test
@@ -91,12 +89,12 @@ public class MessageListenerTest  {
         log.trace("MessageListenerTest.putMessage() name=" + message.getState().name + " payload=" + message.getPayload());
     }
 
-    private StateDescriptorX.StateDescriptor makeRandomState() {
+    private StateDescriptorFactory.StateDescriptor makeRandomState() {
         log.trace("MessageListenerTest.makeRandomState() ");
-        int stateIndex = Random.random(0, StateDescriptorX.INSTANCE.Max()-1);
-        StateDescriptorX.StateDescriptor stateDescriptor = null;
+        int stateIndex = Random.random(0, StateDescriptorFactory.INSTANCE.Max()-1);
+        StateDescriptorFactory.StateDescriptor stateDescriptor = null;
         try {
-            stateDescriptor = StateDescriptorX.INSTANCE.get(stateIndex);
+            stateDescriptor = StateDescriptorFactory.INSTANCE.get(stateIndex);
         }
         catch (Exception ex) {
             log.error("MessageListenerTest.makeRandomState() ", ex);

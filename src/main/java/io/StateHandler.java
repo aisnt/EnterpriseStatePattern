@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import state.InvalidStateTransitionException;
 import state.SendingException;
 import state.State;
-import state.StateDescriptorX;
+import state.StateDescriptorFactory;
 
 import java.util.Date;
 
@@ -26,7 +26,7 @@ public enum StateHandler {
     final private Boolean stateLock = false;
     StateHandler() {
         try {
-            currentStateObject = State.create(StateDescriptorX.INSTANCE.get("Initial"));
+            currentStateObject = State.create(StateDescriptorFactory.INSTANCE.get("Initial"));
         } catch(Exception e) {
             log.error("StateHandler.ctor() Exception=",e);
         }
@@ -38,7 +38,7 @@ public enum StateHandler {
             return false;
         }
         synchronized(stateLock) {
-            StateDescriptorX.StateDescriptor oldState = currentStateObject.getState();
+            StateDescriptorFactory.StateDescriptor oldState = currentStateObject.getState();
             log.debug("StateHandler.setState() before changeCurrentState from " + oldState.name + " to " + state.getState().name + ".");
             currentStateObject = state;
             currentEvent = new Event(oldState, state.getState(), new Date());
@@ -52,13 +52,13 @@ public enum StateHandler {
 
     public void changeCurrentState(State state) {
         synchronized(stateLock) {
-            StateDescriptorX.StateDescriptor oldState = currentStateObject.getState();
+            StateDescriptorFactory.StateDescriptor oldState = currentStateObject.getState();
             log.debug("StateHandler.changeCurrentState() before changeCurrentState from " + oldState + " to " + state.getState() + ".");
             setState(state);
         }
     }
 
-    public StateDescriptorX.StateDescriptor getCurrentState() {
+    public StateDescriptorFactory.StateDescriptor getCurrentState() {
         synchronized(stateLock) {
             return currentStateObject.getState();
         }

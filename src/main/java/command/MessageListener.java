@@ -5,7 +5,7 @@ import common.Util;
 import io.StateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import state.StateDescriptorX;
+import state.StateDescriptorFactory;
 
 import java.io.IOException;
 
@@ -39,7 +39,7 @@ public abstract class MessageListener extends Thread {
                 onMessage(message);
                 sleep(getMessageWait);
                 log.info("MessageListener.run() last event=" + StateHandler.INSTANCE.getLastEvent().toString() + ".");
-            } while ( !StateDescriptorX.INSTANCE.Final(StateHandler.INSTANCE.getLastEvent().to) );
+            } while ( !StateDescriptorFactory.INSTANCE.isFinal(StateHandler.INSTANCE.getLastEvent().to) );
         } catch (InterruptedException e) {
             log.info("MessageListener.run() InterruptedException = " + e.getMessage());
         } catch (IOException e) {

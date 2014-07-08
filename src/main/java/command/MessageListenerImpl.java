@@ -3,7 +3,7 @@ package command;
 import common.Message;
 import common.Util;
 import io.StateHandler;
-import state.StateDescriptorX;
+import state.StateDescriptorFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -72,7 +72,7 @@ public class MessageListenerImpl extends MessageListener {
 
     private synchronized int addMessage(Message message) throws InterruptedException {
         log.trace("MessageListenerImpl.addMessage() start ...");
-        while ((size() >= MAXQUEUE) && (!StateDescriptorX.INSTANCE.Final(StateHandler.INSTANCE.getCurrentState() ))) {
+        while ((size() >= MAXQUEUE) && (!StateDescriptorFactory.INSTANCE.isFinal(StateHandler.INSTANCE.getCurrentState()))) {
             log.trace("MessageListenerImpl.addMessage() Queue size = " + size() + ".");
             log.trace("MessageListenerImpl.addMessage() waiting.");
             wait();

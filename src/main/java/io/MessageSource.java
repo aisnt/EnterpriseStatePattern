@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import state.InvalidStateTransitionException;
 import state.SendingException;
-import state.StateDescriptorX;
+import state.StateDescriptorFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +24,7 @@ public enum MessageSource implements Command {
     @Override
     public void onMessage(Message s)  {
         StateHandler stateHandler = StateHandler.INSTANCE;
-        StateDescriptorX.StateDescriptor old = stateHandler.getCurrentState();
+        StateDescriptorFactory.StateDescriptor old = stateHandler.getCurrentState();
         log.debug("MessageSource.onMessage() Proposed transition from " + old.name + " to " + s.getState().name + ".");
         try {
             ResultWrapper<DTO> dto = stateHandler.doTransition(s);
