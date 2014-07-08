@@ -5,7 +5,7 @@ import common.Util;
 import io.StateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import state.StateDescriptor;
+import state.StateDescriptorX;
 
 import java.io.IOException;
 
@@ -22,28 +22,30 @@ public abstract class MessageListener extends Thread {
     Command command;
 
     protected void onMessage(Message message) {
-        log.trace("MessageListener.onMessage() for " + message.getState() + " state.");
+        log.trace("MessageListener.onMessage() for " + message.getState().name + " state.");
         command.onMessage(message);
     }
 
     @Override
     public void run() {
-        log.trace("MessageListener.run()");
+        log.trace("MessageListener.run() start ...");
         try {
             int getMessageWait = Util.getIntProperty("GetMessageWait");
+            log.trace("MessageListener.run() getMessageWait=" + getMessageWait + ".");
             do {
                 log.trace("MessageListener.run() getMessage");
                 Message message = getMessage();
-                log.info("MessageListener.run() message retrieved " + message.getState() + " state.");
+                log.info("MessageListener.run() message retrieved " + message.getState().name + " state.");
                 onMessage(message);
                 sleep(getMessageWait);
-                log.info("MessageListener.getMessage() last event=" + StateHandler.INSTANCE.getLastEvent().toString() + ".");
-            } while ( StateHandler.INSTANCE.getLastEvent().to != StateDescriptor.Final );
+                log.info("MessageListener.run() last event=" + StateHandler.INSTANCE.getLastEvent().toString() + ".");
+            } while ( !StateDescriptorX.INSTANCE.Final(StateHandler.INSTANCE.getLastEvent().to) );
         } catch (InterruptedException e) {
             log.info("MessageListener.run() InterruptedException = " + e.getMessage());
         } catch (IOException e) {
             log.info("MessageListener.run() IOException = " + e.getMessage());
         }
+        log.trace("MessageListener.run() ... end");
     }
 
     protected abstract Message getMessage() throws InterruptedException;
