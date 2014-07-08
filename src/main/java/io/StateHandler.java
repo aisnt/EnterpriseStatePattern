@@ -26,6 +26,7 @@ public enum StateHandler {
     final private Boolean stateLock = false;
     StateHandler() {
         try {
+            //TODO Assume we have one initial state
             currentStateObject = State.create(StateDescriptorFactory.INSTANCE.get("Initial"));
         } catch(Exception e) {
             log.error("StateHandler.ctor() Exception=",e);

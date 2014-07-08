@@ -56,11 +56,11 @@ public enum StateDescriptorFactory {
         throw new InvalidStateException();
     }
 
-    public StateDescriptor get(String state) throws InvalidStateException {
+    public StateDescriptor get(String stateName) throws InvalidStateException {
         ListIterator l = stateDescriptors.listIterator();
         while(l.hasNext()) {
             StateDescriptor ll = (StateDescriptor) l.next();
-            if ( ll.name.contains(state) ) {
+            if ( ll.name.contains(stateName) ) {
                 return ll;
             }
         }

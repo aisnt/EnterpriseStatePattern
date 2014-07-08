@@ -30,7 +30,7 @@ public class MessageListenerTest  {
         log.info("MessageListenerTest.setUp()");
         Util.setProperties("src/test/resources/state.properties");
 
-        //Start from any state
+        //TODO Start from any state
         if (!StateHandler.INSTANCE.setState(State.create(StateDescriptorFactory.INSTANCE.get("State2")))) { //TODO parameterise
             log.error("setState failed.");
             fail();

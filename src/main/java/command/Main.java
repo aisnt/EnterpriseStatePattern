@@ -38,7 +38,7 @@ public class Main {
 
         Util.setProperties("src/main/resources/state.properties");
 
-        //Start from any state
+        //TODO Start from any state
         StateHandler.INSTANCE.setState(State.create(StateDescriptorFactory.INSTANCE.get("State2")));
         messageListener = new MessageListenerImpl( MessageSource.INSTANCE );
         messageListener.start();
