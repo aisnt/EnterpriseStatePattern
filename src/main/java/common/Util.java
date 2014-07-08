@@ -24,4 +24,12 @@ public class Util {
         String var = properties.getProperty(name);
         return Integer.parseInt(var);
     }
+
+    public static int getIntPropertyDef(String name, int def) {
+        try {
+            return getIntProperty( name);
+        } catch (IOException ex) {
+            return def;
+        }
+    }
 }

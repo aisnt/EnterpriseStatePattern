@@ -1,8 +1,9 @@
 package command;
 
 import common.Message;
+import common.Util;
 import io.StateHandler;
-import state.StateDescriptor;
+import state.StateDescriptorX;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,7 +32,6 @@ public class MessageListenerImpl extends MessageListener {
     }
 
     protected int size() {
-        log.trace("MessageListenerImpl.size() start ...");
         int size;
         synchronized(messages) {
             size = messages.size();
@@ -40,7 +40,7 @@ public class MessageListenerImpl extends MessageListener {
         return size ;
     }
 
-    /*Helper message to load sorage for testing*/
+    /*Helper message to load storage for testing*/
     protected int putMessage(Message message) throws InterruptedException {
         log.trace("MessageListenerImpl.putMessage() start ...");
         return addMessage(message);
@@ -48,7 +48,7 @@ public class MessageListenerImpl extends MessageListener {
 
     private List messages = Collections.synchronizedList(new ArrayList());
 
-    private static final int MAXQUEUE = 5;//Why 5? Why not. This is just an impl thing.
+    private static final int MAXQUEUE = Util.getIntPropertyDef("MaxQueue", 5);  //Why 5? Why not. This is just an impl thing.
 
     private synchronized Message popMessage() throws InterruptedException {
         log.trace("MessageListenerImpl.popMessage() start ...");
@@ -61,7 +61,7 @@ public class MessageListenerImpl extends MessageListener {
         Message message;
         synchronized(messages) {
             message = (Message) messages.get(0);
-            log.info("MessageListenerImpl.popMessage() retrieved " + message.getState() + " state.");
+            log.info("MessageListenerImpl.popMessage() retrieved " + message.getState().name + " state.");
             log.trace("MessageListenerImpl.popMessage() Before size=" + messages.size() + ".");
             messages.remove(0);
         }
@@ -72,7 +72,7 @@ public class MessageListenerImpl extends MessageListener {
 
     private synchronized int addMessage(Message message) throws InterruptedException {
         log.trace("MessageListenerImpl.addMessage() start ...");
-        while ((size() >= MAXQUEUE) && (StateHandler.INSTANCE.getCurrentState() != StateDescriptor.Final)) {
+        while ((size() >= MAXQUEUE) && (!StateDescriptorX.INSTANCE.Final(StateHandler.INSTANCE.getCurrentState() ))) {
             log.trace("MessageListenerImpl.addMessage() Queue size = " + size() + ".");
             log.trace("MessageListenerImpl.addMessage() waiting.");
             wait();
@@ -80,7 +80,9 @@ public class MessageListenerImpl extends MessageListener {
         synchronized(message) {
             messages.add(message);
         }
+        log.trace("MessageListenerImpl.addMessage() notify.");
         notify();
-        return messages.size();
+        log.trace("MessageListenerImpl.addMessage() Queue size = " + size() + ".");
+        return size();
     }
 }

@@ -2,7 +2,7 @@ package state.dynamic;
 
 import org.junit.Assert;
 import org.junit.Test;
-import state.StateDescriptor;
+import state.StateDescriptorX;
 
 public class NodeTest {
     @Test
@@ -15,16 +15,16 @@ public class NodeTest {
 
     @Test(expected=InvalidStateException.class)
     public void testNumericCtorFail() throws InvalidStateException {
-        int col = StateDescriptor.Max.ordinal();
+        int col = StateDescriptorX.INSTANCE.Max();
         int row = 0;
         new Node(col, row);
         Assert.fail();
     }
 
     @Test
-    public void testNumericCtor() {
-        int col = StateDescriptor.Initial.ordinal();
-        int row = StateDescriptor.State2.ordinal();
+    public void testNumericCtor() throws InvalidStateException {
+        int col = StateDescriptorX.INSTANCE.get("Initial").ordinal;
+        int row = StateDescriptorX.INSTANCE.get("State2").ordinal;
         Node node = null;
         try {
             node = new Node(col, row);
@@ -35,17 +35,17 @@ public class NodeTest {
     }
 
     @Test
-    public void testStringCtor() {
-        String s1 = StateDescriptor.Initial.name();
-        String s2 = StateDescriptor.Final.name();
+    public void testStringCtor() throws InvalidStateException {
+        String s1 = StateDescriptorX.INSTANCE.get("Initial").name;
+        String s2 = StateDescriptorX.INSTANCE.get("Initial").name;
         Node node = new Node(s1, s2, true);
         Assert.assertNotNull( node );
     }
 
-    @Test(expected=IllegalArgumentException.class)
-    public void testStringCtorFail() {
+    @Test(expected=InvalidStateException.class)
+    public void testStringCtorFail() throws InvalidStateException  {
         String s1 = "nonsense";
-        String s2 = StateDescriptor.Final.name();
+        String s2 = StateDescriptorX.INSTANCE.get("Final").name;
         new Node(s1, s2, true);
         Assert.fail();
     }

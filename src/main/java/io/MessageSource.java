@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import state.InvalidStateTransitionException;
 import state.SendingException;
-import state.StateDescriptor;
+import state.StateDescriptorX;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,20 +24,20 @@ public enum MessageSource implements Command {
     @Override
     public void onMessage(Message s)  {
         StateHandler stateHandler = StateHandler.INSTANCE;
-        StateDescriptor old = stateHandler.getCurrentState();
-        log.debug("MessageSource.onMessage() Proposed transition from " + old + " to " + s.getState() + ".");
+        StateDescriptorX.StateDescriptor old = stateHandler.getCurrentState();
+        log.debug("MessageSource.onMessage() Proposed transition from " + old.name + " to " + s.getState().name + ".");
         try {
             ResultWrapper<DTO> dto = stateHandler.doTransition(s);
             results.add(dto);
             Event event = stateHandler.getLastEvent();
             events.add(event);
-            log.info("MessageSource.onMessage() Successful transition from " + old + " to " + s.getState() + ".");
+            log.info("MessageSource.onMessage() Successful transition from " + old.name + " to " + s.getState().name + ".");
         } catch (InvalidStateTransitionException ex) {
-            log.trace("MessageSource.onMessage() InvalidStateTransitionException=" + ex.getMessage());
-            log.info("MessageSource.onMessage() Failed transition from " + stateHandler.getCurrentState() + " to " + s.getState() + ".");
+            log.trace("MessageSource.onMessage() InvalidStateTransitionException = " + ex.getMessage());
+            log.info("MessageSource.onMessage() Failed transition from " + stateHandler.getCurrentState().name + " to " + s.getState().name + ".");
         } catch (SendingException ex) {
-            log.trace("MessageSource.onMessage() SendingException=" + ex.getMessage());
-            log.info("MessageSource.onMessage() Failed transition from " + stateHandler.getCurrentState() + " to " + s.getState() + ".");
+            log.trace("MessageSource.onMessage() SendingException = " + ex.getMessage());
+            log.info("MessageSource.onMessage() Failed transition from " + stateHandler.getCurrentState().name + " to " + s.getState().name + ".");
         }
     }
     public List<Event> events = new ArrayList<>();

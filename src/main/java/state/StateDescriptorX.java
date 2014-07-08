@@ -2,13 +2,14 @@ package state;
 
 import state.dynamic.InvalidStateException;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ListIterator;
+
 /**
-* Created by david.hislop@korwe.com on 2014/07/07.
-*/
-//TODO Hmm? Inject. The *abstract* base class should not need to know.
-
-
-//TODO Hmm? Inject. The *abstract* base class should not need to know.
+ * Created by david.hislop@korwe.com on 2014/07/07.
+ */
+/*
 public enum StateDescriptor {Initial, State1, State2, State3, Final, Max;
 
     public static state.StateDescriptor getStateDescriptor(int stateIndex) throws InvalidStateException {
@@ -23,14 +24,7 @@ public enum StateDescriptor {Initial, State1, State2, State3, Final, Max;
     }
 }
 
-/*
-package state;
-
-import state.dynamic.InvalidStateException;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ListIterator;
+*/
 
 public enum StateDescriptorX {INSTANCE;
     private List<StateDescriptor> ccc = new ArrayList<>();
@@ -53,9 +47,9 @@ public enum StateDescriptorX {INSTANCE;
         }
         ListIterator l = ccc.listIterator();
         while(l.hasNext()) {
-            StateDescriptor ll = (StateDescriptor) l;
-            if ( ll.index == stateIndex ) {
-                return (StateDescriptor) l;
+            StateDescriptor ll = (StateDescriptor) l.next();
+            if ( ll.ordinal == stateIndex ) {
+                return ll;
             }
         }
         throw new InvalidStateException();
@@ -64,31 +58,29 @@ public enum StateDescriptorX {INSTANCE;
     public StateDescriptor get(String state) throws InvalidStateException {
         ListIterator l = ccc.listIterator();
         while(l.hasNext()) {
-            StateDescriptor ll = (StateDescriptor) l;
+            StateDescriptor ll = (StateDescriptor) l.next();
             if ( ll.name.contains(state) ) {
-                return (StateDescriptor) l;
+                return ll;
             }
         }
         throw new InvalidStateException();
     }
 
+    public Boolean Initial(StateDescriptor s) {
+        return s.name.contains(ccc.get(0).name);
+    }
+
+    public Boolean Final(StateDescriptor s) {
+        return s.name.contains(ccc.get(4).name);//TODO
+    }
+
     public class StateDescriptor {
-        String name;
-        int index;
+        public String name;
+        public int ordinal;
         public StateDescriptor(String s, int i) {
             name = s;
-            index = i;
-        }
-
-        public Boolean Initial(String s) {
-            return s==name;
-        }
-
-        public Boolean Final(String s) {
-            return s==name;
+            ordinal = i;
         }
     }
 }
 
-
-*/

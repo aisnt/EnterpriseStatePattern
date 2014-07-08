@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import state.InvalidStateTransitionException;
 import state.SendingException;
 import state.State;
-import state.StateDescriptor;
+import state.StateDescriptorX;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -78,25 +78,25 @@ public enum StateFactory {
         return transitionTable;
     }
 
-    public Base create(StateDescriptor s) throws IOException, InvalidStateException {
+    public Base create(StateDescriptorX.StateDescriptor s) throws IOException, InvalidStateException {
         return new Base(s);
     }
 
     public class Base extends State {
-        public Base(StateDescriptor s) throws IOException, InvalidStateException {
+        public Base(StateDescriptorX.StateDescriptor s) throws IOException, InvalidStateException {
             super(s);
             log.trace("StateFactory.Base.ctor() start.");
         }
 
         @Override
         public ResultWrapper<DTO> doTransition(Message message) throws InvalidStateTransitionException, SendingException {
-            log.trace("StateFactory.Base.doTransition() From " + this.getState() + " to " + message.getState() + ".");
+            log.trace("StateFactory.Base.doTransition() from " + this.getState().name + " to " + message.getState().name + ".");
 
             ResultWrapper<DTO> dtos = null;
             if (validatePolicy(this.getState(), message.getState())) {
                 dtos = transition(message.getState(), message.getPayload());
             } else {
-                throw new InvalidStateTransitionException("StateFactory.Base.doTransition() No transition from " + this.getState() + " to " + message.getState() + ".");
+                throw new InvalidStateTransitionException("StateFactory.Base.doTransition() No transition allowed from " + this.getState().name + " to " + message.getState().name + ".");
             }
 
             return dtos;
@@ -114,13 +114,14 @@ public enum StateFactory {
             return dtos;
         }
 
-        private Boolean validatePolicy(StateDescriptor thisState, StateDescriptor nextState) {
-            log.trace("StateFactory.Base.validatePolicy() from " + thisState.name() + " to " + nextState.name() + ".");
-            int row = thisState.ordinal();
-            int col = nextState.ordinal();
+        private Boolean validatePolicy(StateDescriptorX.StateDescriptor thisState, StateDescriptorX.StateDescriptor nextState) {
+            log.trace("StateFactory.Base.validatePolicy() from " + thisState.name + " to " + nextState.name + ".");
+            int row = thisState.ordinal;
+            int col = nextState.ordinal;
             log.debug("StateFactory.Base.validatePolicy() from " + row + " to " + col + ".");
-            log.debug("StateFactory.Base.validatePolicy() from " + transitions[col][row].from + " to " + transitions[col][row].to + " val " + transitions[col][row].doIt + ".");
-            return transitions[col][row].doIt;
+            Node node = transitions[col][row];
+            log.debug("StateFactory.Base.validatePolicy() from " + node.from.name + " to " + node.to.name + " transition allowed = " + node.doTransition + ".");
+            return node.doTransition;
         }
     }
 }

@@ -18,13 +18,13 @@ import java.io.IOException;
 public abstract class State {
     final static Logger log = LoggerFactory.getLogger(State.class);
 
-    public State(StateDescriptor stateDescriptor) {
-        log.trace("State.ctor() for " + stateDescriptor);
+    public State(StateDescriptorX.StateDescriptor stateDescriptor) {
+        log.trace("State.ctor() for " + stateDescriptor.name);
         currentState = stateDescriptor;
     }
 
-    public static State create(StateDescriptor stateDescriptor) {
-        log.trace("State.create() " + stateDescriptor);
+    public static State create(StateDescriptorX.StateDescriptor stateDescriptor) {
+        log.trace("State.create() " + stateDescriptor.name);
 
         try {
             State s = StateFactory.INSTANCE.create(stateDescriptor);
@@ -37,11 +37,11 @@ public abstract class State {
         return null;
     }
 
-    public StateDescriptor getState() {
+    public StateDescriptorX.StateDescriptor getState() {
         return currentState;
     }
 
-    private StateDescriptor currentState ;
+    private StateDescriptorX.StateDescriptor currentState ;
 
     /*
     part 1: This is called by the StateHandler and is implemented in all the derived classes
@@ -56,7 +56,7 @@ public abstract class State {
     *
     * By now the transition is permitted
     * */
-    protected ResultWrapper<DTO> transition(StateDescriptor stateDescriptor, String message) throws SendingException {
+    protected ResultWrapper<DTO> transition(StateDescriptorX.StateDescriptor stateDescriptor, String message) throws SendingException {
         log.trace("State.transition() transition from " + this.getState() + " to " + stateDescriptor + ".");
         log.trace("State.transition() Before class Name = " + this.getClass().getName() + ".");
         StateHandler stateHandler = StateHandler.INSTANCE;
@@ -70,8 +70,8 @@ public abstract class State {
             //TransitionStart
             synchronized (transitionLock) {
                 if (stateHandler.getCurrentState() != this.getState()) {
-                    log.error("State.transition() Current state " + stateHandler.getCurrentState() + " != " + " base state " + this.getState() + ".");
-                    throw new SendingException("State.transition() Current state " + stateHandler.getCurrentState() + " != " + " base state " + this.getState() + ".");
+                    log.error("State.transition() Current state " + stateHandler.getCurrentState().name + " != " + " base state " + this.getState().name + ".");
+                    throw new SendingException("State.transition() Current state " + stateHandler.getCurrentState().name + " != " + " base state " + this.getState().name + ".");
                 }
                 //Check that transition is possible
             }
