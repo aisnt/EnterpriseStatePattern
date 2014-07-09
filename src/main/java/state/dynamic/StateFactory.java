@@ -6,10 +6,11 @@ import command.TransferApi;
 import command.TransferApiImpl;
 import common.Message;
 import common.Util;
+import exceptions.InvalidStateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import state.InvalidStateTransitionException;
-import state.SendingException;
+import exceptions.InvalidStateTransitionException;
+import exceptions.SendingException;
 import state.State;
 import state.StateDescriptorFactory;
 
@@ -48,21 +49,21 @@ public enum StateFactory {
         log.trace("ResultWrapper.createValidTransitionTable() -> " + fileName);
         FileReader fileReader = new FileReader(fileName);
         BufferedReader bufferedReader = new BufferedReader(fileReader);
-        String s = bufferedReader.readLine();
-        String[] colNames = s.split(",");
+        String line = bufferedReader.readLine();
+        String[] colNames = line.split(",");
         int len = colNames.length - 1;
         Node[][] transitionTable = new Node[len][len];
         int row = 0;
-        while ((s = bufferedReader.readLine()) != null) {
-            String[] vals = s.split(",");
-            List<String> vs = Arrays.asList(vals);
+        while ((line = bufferedReader.readLine()) != null) {
+            String[] vals = line.split(",");
+            List<String> cells = Arrays.asList(vals);
             int col = 0;
             String rowName = null;
-            for (String v : vs) {
+            for (String cell : cells) {
                 if (col == 0) {
-                    rowName = v;
+                    rowName = cell;
                 } else {
-                    if (v.contains("Y")) {
+                    if (cell.contains("Y")) {
                         Node node = new Node(col - 1, row);
                         transitionTable[row][col - 1] = node;
                     } else {
@@ -78,16 +79,19 @@ public enum StateFactory {
         return transitionTable;
     }
 
-    public Base create(StateDescriptorFactory.StateDescriptor s) throws IOException, InvalidStateException {
-        return new Base(s);
+    public Base create(StateDescriptorFactory.StateDescriptor descriptor) throws IOException, InvalidStateException {
+        return new Base(descriptor);
     }
 
     public class Base extends State {
-        public Base(StateDescriptorFactory.StateDescriptor s) throws IOException, InvalidStateException {
-            super(s);
+        public Base(StateDescriptorFactory.StateDescriptor descriptor) throws IOException, InvalidStateException {
+            super(descriptor);
             log.trace("StateFactory.Base.ctor() start.");
         }
 
+        /*
+        part 1: This is called by the StateHandler and is implemented in all the derived classes
+         */
         @Override
         public ResultWrapper<DTO> doTransition(Message message) throws InvalidStateTransitionException, SendingException {
             log.trace("StateFactory.Base.doTransition() from " + this.getState().name + " to " + message.getState().name + ".");

@@ -1,14 +1,13 @@
-package io;
+package state;
 
 import command.Command;
 import command.DTO;
 import command.ResultWrapper;
 import common.Message;
+import exceptions.InvalidStateTransitionException;
+import exceptions.SendingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import state.InvalidStateTransitionException;
-import state.SendingException;
-import state.StateDescriptorFactory;
 
 import java.util.ArrayList;
 import java.util.List;

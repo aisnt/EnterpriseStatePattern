@@ -1,14 +1,13 @@
-package io;
+package state;
 
 import command.DTO;
 import command.ResultWrapper;
 import common.Message;
+import exceptions.InvalidStateTransitionException;
+import exceptions.SendingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import state.InvalidStateTransitionException;
-import state.SendingException;
-import state.State;
-import state.StateDescriptorFactory;
+import exceptions.InvalidStateException;
 
 import java.util.Date;
 
@@ -25,6 +24,7 @@ public enum StateHandler {
     private Event currentEvent;
     final private Boolean stateLock = false;
     StateHandler() {
+        log.trace("StateHandler.ctor()");
         try {
             //TODO Assume we have one initial state
             currentStateObject = State.create(StateDescriptorFactory.INSTANCE.get("Initial"));
@@ -34,7 +34,21 @@ public enum StateHandler {
         currentEvent = new Event( currentStateObject.getState(), new Date());
     }
 
-    public Boolean setState(State state) {
+    public Boolean setInitialState(String stateName) {
+        log.trace("StateHandler.setInitialState() to " + stateName + ".");
+        State state = null;
+        try {
+            state = State.create(StateDescriptorFactory.INSTANCE.get(stateName));
+        } catch (InvalidStateException e) {
+            log.error("StateHandler.setInitialState() Exception=",e);
+            return false;
+        }
+
+        return setState( state );
+    }
+
+    protected Boolean setState(State state) {
+        log.trace("StateHandler.setState() to " + state.getState().name + ".");
         if (state == null) {
             return false;
         }
@@ -51,7 +65,7 @@ public enum StateHandler {
         return currentEvent;
     }
 
-    public void changeCurrentState(State state) {
+    protected void changeCurrentState(State state) {
         synchronized(stateLock) {
             StateDescriptorFactory.StateDescriptor oldState = currentStateObject.getState();
             log.debug("StateHandler.changeCurrentState() before changeCurrentState from " + oldState + " to " + state.getState() + ".");
@@ -65,7 +79,7 @@ public enum StateHandler {
         }
     }
 
-    public ResultWrapper<DTO> doTransition(Message s) throws InvalidStateTransitionException, SendingException {
+    protected ResultWrapper<DTO> doTransition(Message s) throws InvalidStateTransitionException, SendingException {
         synchronized(stateLock) {
             return currentStateObject.doTransition(s);
         }

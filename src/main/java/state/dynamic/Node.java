@@ -1,5 +1,6 @@
 package state.dynamic;
 
+import exceptions.InvalidStateException;
 import state.StateDescriptorFactory;
 
 /**

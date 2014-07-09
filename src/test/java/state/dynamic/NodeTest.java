@@ -1,5 +1,6 @@
 package state.dynamic;
 
+import exceptions.InvalidStateException;
 import org.junit.Assert;
 import org.junit.Test;
 import state.StateDescriptorFactory;
@@ -13,7 +14,7 @@ public class NodeTest {
         Assert.assertNotNull( node );
     }
 
-    @Test(expected=InvalidStateException.class)
+    @Test(expected= InvalidStateException.class)
     public void testNumericCtorFail() throws InvalidStateException {
         int col = StateDescriptorFactory.INSTANCE.Max();
         int row = 0;

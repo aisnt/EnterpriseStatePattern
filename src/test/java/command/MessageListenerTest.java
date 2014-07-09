@@ -3,16 +3,15 @@ package command;
 import common.Message;
 import common.Random;
 import common.Util;
-import io.Event;
-import io.MessageSource;
-import io.StateHandler;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import state.State;
+import state.Event;
+import state.MessageSource;
 import state.StateDescriptorFactory;
+import state.StateHandler;
 
 import java.util.Iterator;
 
@@ -31,8 +30,9 @@ public class MessageListenerTest  {
         Util.setProperties("src/test/resources/state.properties");
 
         //TODO Start from any state
-        if (!StateHandler.INSTANCE.setState(State.create(StateDescriptorFactory.INSTANCE.get("State2")))) { //TODO parameterise
-            log.error("setState failed.");
+        String state = "State2";
+        if (!StateHandler.INSTANCE.setInitialState(state)) {
+            log.error("MessageListenerTest.setUp() setState to " + state + "failed.");
             fail();
         }
         messageListener = new MessageListenerImpl( MessageSource.INSTANCE );

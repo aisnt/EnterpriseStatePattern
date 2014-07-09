@@ -3,10 +3,11 @@ package state;
 import command.DTO;
 import command.ResultWrapper;
 import common.Message;
-import io.StateHandler;
+import exceptions.InvalidStateTransitionException;
+import exceptions.SendingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import state.dynamic.InvalidStateException;
+import exceptions.InvalidStateException;
 import state.dynamic.StateFactory;
 
 import java.io.IOException;

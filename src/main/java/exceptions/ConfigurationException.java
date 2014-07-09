@@ -1,4 +1,4 @@
-package io;
+package exceptions;
 
 /**
  * Created by david.hislop@korwe.com on 2014/06/26.

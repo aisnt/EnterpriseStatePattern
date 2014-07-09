@@ -2,13 +2,12 @@ package command;
 
 import common.Message;
 import common.Util;
-import io.MessageSource;
-import io.StateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import state.State;
+import state.MessageSource;
 import state.StateDescriptorFactory;
-import state.dynamic.InvalidStateException;
+import state.StateHandler;
+import exceptions.InvalidStateException;
 
 /**
  * Created by david.hislop@korwe.com on 2014/06/22.
@@ -39,7 +38,7 @@ public class Main {
         Util.setProperties("src/main/resources/state.properties");
 
         //TODO Start from any state
-        StateHandler.INSTANCE.setState(State.create(StateDescriptorFactory.INSTANCE.get("State2")));
+        StateHandler.INSTANCE.setInitialState("State2");
         messageListener = new MessageListenerImpl( MessageSource.INSTANCE );
         messageListener.start();
     }

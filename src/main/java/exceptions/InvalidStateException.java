@@ -1,4 +1,4 @@
-package state.dynamic;
+package exceptions;
 
 /**
  * Created by davidhislop on 2014/07/07.

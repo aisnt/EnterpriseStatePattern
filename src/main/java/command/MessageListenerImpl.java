@@ -2,7 +2,7 @@ package command;
 
 import common.Message;
 import common.Util;
-import io.StateHandler;
+import state.StateHandler;
 import state.StateDescriptorFactory;
 
 import java.util.ArrayList;

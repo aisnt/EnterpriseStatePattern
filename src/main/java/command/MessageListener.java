@@ -2,7 +2,7 @@ package command;
 
 import common.Message;
 import common.Util;
-import io.StateHandler;
+import state.StateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import state.StateDescriptorFactory;

@@ -1,4 +1,4 @@
-package state;
+package exceptions;
 
 /**
  * Created by david.hislop@korwe.com on 2014/06/23.

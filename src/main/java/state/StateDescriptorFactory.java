@@ -1,6 +1,6 @@
 package state;
 
-import state.dynamic.InvalidStateException;
+import exceptions.InvalidStateException;
 
 import java.util.ArrayList;
 import java.util.List;
