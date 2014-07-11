@@ -8,6 +8,9 @@ public class ResultWrapper<T> {
     public ResultWrapper(T t){
         this.t = t;
     }
+    public  T get() {
+        return t;
+    }
 
     @Override
     public String toString() {

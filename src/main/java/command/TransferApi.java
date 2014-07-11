@@ -5,5 +5,5 @@ package command;
  *
  */
 public interface TransferApi {
-    public DTO get(String key);
+    public DataTransferObject get(String key);
 }

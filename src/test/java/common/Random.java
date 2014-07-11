@@ -4,7 +4,6 @@ package common;
  * Created by davidhislop on 2014/07/07.
  */
 public class Random {
-    private Random() {}
     static public int index = 0;
     private Random(Builder b) {
         this.index = b.index;

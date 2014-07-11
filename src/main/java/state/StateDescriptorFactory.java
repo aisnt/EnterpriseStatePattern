@@ -34,6 +34,7 @@ public enum StateDescriptorFactory {
         return stateDescriptors.size();
     }
 
+    //TODO
     StateDescriptorFactory() {
         stateDescriptors.add(new StateDescriptor("Initial", 0));
         stateDescriptors.add(new StateDescriptor("State1", 1));
@@ -75,7 +76,7 @@ public enum StateDescriptorFactory {
         return state.stateType == StateType.Final;
     }
 
-    enum StateType {Initial,Final,Normal};
+    enum StateType {Initial, Final, Normal};
     public class StateDescriptor {
         public StateType stateType;
         public String name;

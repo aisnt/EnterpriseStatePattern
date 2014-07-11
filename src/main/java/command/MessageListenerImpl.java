@@ -2,6 +2,8 @@ package command;
 
 import common.Message;
 import common.Util;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import state.StateHandler;
 import state.StateDescriptorFactory;
 
@@ -13,6 +15,7 @@ import java.util.List;
  * Created by david.hislop@korwe.com on 2014/06/22.
  */
 public class MessageListenerImpl extends MessageListener {
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
     public MessageListenerImpl(Command command) {
         super(command);
     }
@@ -61,7 +64,7 @@ public class MessageListenerImpl extends MessageListener {
         Message message;
         synchronized(messages) {
             message = (Message) messages.get(0);
-            log.info("MessageListenerImpl.popMessage() retrieved " + message.getState().name + " state.");
+            log.info("MessageListenerImpl.popMessage() retrieved " + message.getDestinationState().name + " state.");
             log.trace("MessageListenerImpl.popMessage() Before size=" + messages.size() + ".");
             messages.remove(0);
         }

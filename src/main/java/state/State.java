@@ -1,13 +1,15 @@
 package state;
 
-import command.DTO;
+import command.DataTransferObject;
 import command.ResultWrapper;
+import command.TransferApi;
+import command.TransferApiImpl;
 import common.Message;
+import exceptions.InvalidStateException;
 import exceptions.InvalidStateTransitionException;
 import exceptions.SendingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import exceptions.InvalidStateException;
 import state.dynamic.StateFactory;
 
 import java.io.IOException;
@@ -17,7 +19,7 @@ import java.io.IOException;
  *
  */
 public abstract class State {
-    final static Logger log = LoggerFactory.getLogger(State.class);
+    private final static Logger log = LoggerFactory.getLogger(State.class);
 
     public State(StateDescriptorFactory.StateDescriptor stateDescriptor) {
         log.trace("State.ctor() for " + stateDescriptor.name);
@@ -28,8 +30,8 @@ public abstract class State {
         log.trace("State.create() " + stateDescriptor.name);
 
         try {
-            State s = StateFactory.INSTANCE.create(stateDescriptor);
-            return s;
+            State state = StateFactory.INSTANCE.create(stateDescriptor);
+            return state;
         } catch (IOException ex) {
             log.error("State.create() IOException. State.create() " + ex.getMessage());
         } catch (InvalidStateException ex) {
@@ -42,86 +44,115 @@ public abstract class State {
         return currentState;
     }
 
-    private StateDescriptorFactory.StateDescriptor currentState ;
+    private StateDescriptorFactory.StateDescriptor currentState;
 
-    /*
-    part 1: This is called by the StateHandler and is implemented in all the derived classes
-     */
-    public abstract ResultWrapper<DTO> doTransition(Message message) throws InvalidStateTransitionException, SendingException;
+    //This is called by the StateHandler
+    public ResultWrapper<DataTransferObject> doTransition(Message message)
+            throws InvalidStateTransitionException, SendingException {
+        log.trace("StateFactory.doTransition() from " + this.getState().name + " to " + message.getDestinationState().name + ".");
 
-    final Boolean transitionLock = false;
+         /**************************************************************************************************************
+         *                                Select either Moore or Mealy transitions.                                    *
+         ***************************************************************************************************************/
 
-    /*
-    * part 3: This is called by the derived state (step 2)
-    * This is the housekeeping part of the transition. Teh real work is done in the derived class.
-    *
-    * By now the transition is permitted
-    * */
-    protected ResultWrapper<DTO> transition(StateDescriptorFactory.StateDescriptor stateDescriptor, String message) throws SendingException {
-        log.trace("State.transition() transition from " + this.getState() + " to " + stateDescriptor + ".");
-        log.trace("State.transition() Before class Name = " + this.getClass().getName() + ".");
-        StateHandler stateHandler = StateHandler.INSTANCE;
-        ResultWrapper<DTO> dtos = null;
+        ResultWrapper<DataTransferObject> dtos = transitionMoore(message.getDestinationState(), message.getPayload());
 
-        /**************************************************************************************************************
-        *                                Select either Moore or Mealy transitions.                                    *
-        ***************************************************************************************************************/
-        //Moore
-        if (!transitionLock) {
-            //TransitionStart
-            synchronized (transitionLock) {
-                if (stateHandler.getCurrentState() != this.getState()) {
-                    log.error("State.transition() Current state " + stateHandler.getCurrentState().name + " != " + " base state " + this.getState().name + ".");
-                    throw new SendingException("State.transition() Current state " + stateHandler.getCurrentState().name + " != " + " base state " + this.getState().name + ".");
-                }
-                //Check that transition is possible
-            }
-
-            //TransitionMid
-            synchronized (transitionLock) {
-                dtos = sendMessage(message);
-                if (dtos == null) {
-                    log.error("State.transition() Cannot transition.");
-                    throw new SendingException("State.transition() Cannot transition.");
-                }
-            }
-
-            //TransitionEnd
-            synchronized (transitionLock) {
-                //Roll back if need be
-                State st = create(stateDescriptor);
-                stateHandler.changeCurrentState(st);
-            }
-        }
-
-        //Mealy
-        /*
-        if (transitionLock = false) {
-            transitionLock = true;
-            //TransitionStart
-            synchronized (transitionLock) {
-                if (stateHandler.getCurrentState() != this.getState()) {
-                    log.error("State.transition() Current state " + stateHandler.getCurrentState() + " != " + " base state " + this.getState() + ".");
-                    return false;
-                }
-
-                if (!sendMessage(message)) {
-                    log.error("State.transition() Cannot transition.");
-                    return false;
-                }
-
-                State st = create(stateDescriptor);
-                stateHandler.changeCurrentState(st);
-            }
-            transitionLock = false;
-        }*/
-
-        log.trace("State.transition() After class Name = " + this.getClass().getName() + ".");
         return dtos;
     }
 
-    /*
-    * part 4: This is implemented in the derived state to do it
-     */
-    protected abstract ResultWrapper<DTO> sendMessage(String payload);
+    protected abstract Boolean validatePolicy(StateDescriptorFactory.StateDescriptor thisState, StateDescriptorFactory.StateDescriptor nextState);
+
+    final Boolean transitionLock = false;
+
+    protected ResultWrapper<DataTransferObject> transitionMealy(StateDescriptorFactory.StateDescriptor destinationState, String message)
+            throws SendingException, InvalidStateTransitionException {
+        log.trace("State.transitionMealy() transition from " + this.getState() + " to " + destinationState.name + ".");
+        log.trace("State.transitionMealy() Before class Name = " + this.getClass().getName() + ".");
+        insanityCheck();
+        StateHandler stateHandler = StateHandler.INSTANCE;
+
+        synchronized (transitionLock) {
+            if (!validatePolicy(this.getState(), destinationState)) {
+                String errorMessage = "StateFactory.transitionMealy() No transition allowed from ";
+                errorMessage += this.getState().name + " to " + destinationState.name + ".";
+
+                if (!stateHandler.addFailedEvent(this.getState(), destinationState)){
+                    log.warn("State.transitionMoore() error");
+                }
+                throw new InvalidStateTransitionException(errorMessage);
+            }
+
+            ResultWrapper<DataTransferObject> wrappedDto = sendMessage(message);
+            if (wrappedDto == null)  {
+                log.error("State.transitionMealy() Cannot transition.");
+                log.error("State.transitionMealy() Cannot transition.");
+                throw new SendingException("State.transitionMealy() Cannot transition.");
+            }
+
+            State destinationStateInstance = create(destinationState);
+            if (!stateHandler.changeCurrentState(destinationStateInstance, wrappedDto.get().getUuid())) {
+                log.error("State.transitionMealy() Cannot changeCurrentState.");
+                return null;
+            }
+            return wrappedDto;
+        }
+    }
+
+    protected ResultWrapper<DataTransferObject> transitionMoore(StateDescriptorFactory.StateDescriptor destinationState, String message)
+            throws SendingException, InvalidStateTransitionException {
+        log.trace("State.transitionMoore() transition from " + this.getState().name + " to " + destinationState.name + ".");
+        log.trace("State.transitionMoore() Before class Name = " + this.getClass().getName() + ".");
+        StateHandler stateHandler = StateHandler.INSTANCE;
+        insanityCheck();
+        synchronized (transitionLock) {
+            //Check that transition is possible
+            if (!validatePolicy(this.getState(), destinationState)) {
+                String errorMessage = "State.transitionMoore() No transition allowed from ";
+                errorMessage += this.getState().name + " to " + destinationState.name + ".";
+                log.warn(errorMessage);
+
+                if (!stateHandler.addFailedEvent(this.getState(), destinationState)){
+                    log.warn("State.transitionMoore() error");
+                }
+                throw new InvalidStateTransitionException(errorMessage);
+            }
+        }
+
+        ResultWrapper<DataTransferObject> wrappedDto = null;
+        //TransitionMid
+        synchronized (transitionLock) {
+            wrappedDto = sendMessage(message);
+            if (wrappedDto == null) {
+                log.error("State.transitionMoore() Cannot transition.");
+                throw new SendingException("State.transition() Cannot transition.");
+            }
+        }
+
+        //TransitionEnd
+        synchronized (transitionLock) {
+            //Roll back if need be
+            State destinationStateInstance = create(destinationState);
+            if (!stateHandler.changeCurrentState(destinationStateInstance, wrappedDto.get().getUuid())) {
+                log.error("State.transitionMealy() Cannot changeCurrentState.");
+                throw new SendingException("State.transition() Cannot change state for transition.");
+            }
+        }
+        return wrappedDto;
+    }
+
+    private void insanityCheck() throws InvalidStateTransitionException {
+        StateHandler stateHandler = StateHandler.INSTANCE;
+        log.debug("State.insanityCheck()  current=" + stateHandler.getCurrentState() + " this=" + this.getState() + ".");
+        if (stateHandler.getCurrentState() != this.getState()) {
+            throw new InvalidStateTransitionException ("Hell on earth");
+        }
+    }
+
+    protected ResultWrapper<DataTransferObject> sendMessage(String payload) {
+        log.trace("State.sendMessage() Output -> " + payload);
+        TransferApi transferApi = new TransferApiImpl();
+        DataTransferObject dto = transferApi.get(payload);
+        ResultWrapper<DataTransferObject> wrappedDto = new ResultWrapper<>(dto);
+        return wrappedDto;
+    }
 }

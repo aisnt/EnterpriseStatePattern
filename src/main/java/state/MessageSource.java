@@ -1,7 +1,7 @@
 package state;
 
 import command.Command;
-import command.DTO;
+import command.DataTransferObject;
 import command.ResultWrapper;
 import common.Message;
 import exceptions.InvalidStateTransitionException;
@@ -18,28 +18,27 @@ import java.util.List;
 public enum MessageSource implements Command {
     INSTANCE;
 
-    Logger log = LoggerFactory.getLogger(this.getClass());
+    private Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Override
     public void onMessage(Message s)  {
         StateHandler stateHandler = StateHandler.INSTANCE;
-        StateDescriptorFactory.StateDescriptor old = stateHandler.getCurrentState();
-        log.debug("MessageSource.onMessage() Proposed transition from " + old.name + " to " + s.getState().name + ".");
+        StateDescriptorFactory.StateDescriptor currentState = stateHandler.getCurrentState();
+        log.debug("MessageSource.onMessage() Proposed transition from " + currentState.name + " to " + s.getDestinationState().name + ".");
         try {
-            ResultWrapper<DTO> dto = stateHandler.doTransition(s);
+            ResultWrapper<DataTransferObject> dto = stateHandler.doTransition(s);
             results.add(dto);
-            Event event = stateHandler.getLastEvent();
-            events.add(event);
-            log.info("MessageSource.onMessage() Successful transition from " + old.name + " to " + s.getState().name + ".");
+            log.info("MessageSource.onMessage() Successful transition from " + currentState.name + " to " + s.getDestinationState().name + ".");
         } catch (InvalidStateTransitionException ex) {
             log.trace("MessageSource.onMessage() InvalidStateTransitionException = " + ex.getMessage());
-            log.info("MessageSource.onMessage() Failed transition from " + stateHandler.getCurrentState().name + " to " + s.getState().name + ".");
+            log.info("MessageSource.onMessage() Failed transition from " + stateHandler.getCurrentState().name + " to " + s.getDestinationState().name + ".");
         } catch (SendingException ex) {
             log.trace("MessageSource.onMessage() SendingException = " + ex.getMessage());
-            log.info("MessageSource.onMessage() Failed transition from " + stateHandler.getCurrentState().name + " to " + s.getState().name + ".");
+            log.info("MessageSource.onMessage() Failed transition from " + stateHandler.getCurrentState().name + " to " + s.getDestinationState().name + ".");
         }
     }
-    public List<Event> events = new ArrayList<>();
-    public List<ResultWrapper<DTO> > results = new ArrayList<>();
+
+    //TODO these can be sent back
+    public List<ResultWrapper<DataTransferObject> > results = new ArrayList<>();
 }
 

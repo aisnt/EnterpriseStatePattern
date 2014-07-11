@@ -20,6 +20,6 @@ public class CommandImpl implements Command {
     @Override
     public void onMessage(Message message) {
         String arg = parseMessage(message);
-        DTO dto = transferApi.get(arg);
+        DataTransferObject dto = transferApi.get(arg);
     }
 }

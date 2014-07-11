@@ -1,9 +1,15 @@
 package common;
 
+import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class RandomTest {
+
+    @Before
+    public void setUp() throws Exception {
+        new Random.Builder().index( 0 ).build();
+    }
 
     @Test
     public void testRandomExistence() throws Exception {

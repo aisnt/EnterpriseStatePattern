@@ -12,7 +12,7 @@ public class Message {
     }
     StateDescriptorFactory.StateDescriptor destinationState;
     String payload = "";
-    public StateDescriptorFactory.StateDescriptor getState() {
+    public StateDescriptorFactory.StateDescriptor getDestinationState() {
         return destinationState;
     }
     public String getPayload() {

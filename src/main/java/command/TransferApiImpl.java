@@ -5,7 +5,7 @@ package command;
  */
 public class TransferApiImpl implements TransferApi {
     @Override
-    public DTO get(String arguments) {
-        return new DTO();
+    public DataTransferObject get(String arguments) {
+        return new DataTransferObject();
     }
 }

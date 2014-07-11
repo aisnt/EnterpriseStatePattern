@@ -1,15 +1,18 @@
 package state;
 
-import command.DTO;
+import command.DataTransferObject;
 import command.ResultWrapper;
 import common.Message;
+import exceptions.ConfigurationException;
+import exceptions.InvalidStateException;
 import exceptions.InvalidStateTransitionException;
 import exceptions.SendingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import exceptions.InvalidStateException;
 
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by david.hislop@korwe.com on 2014/06/26.
@@ -17,59 +20,138 @@ import java.util.Date;
 public enum StateHandler {
     INSTANCE;
 
-    Logger log = LoggerFactory.getLogger(this.getClass());
+    private Logger log = LoggerFactory.getLogger(this.getClass());
 
     /*We need to use the derived object*/
     private State currentStateObject;
-    private Event currentEvent;
+
+    public List<Event> events = new ArrayList<>();
+
     final private Boolean stateLock = false;
     StateHandler() {
         log.trace("StateHandler.ctor()");
         try {
             //TODO Assume we have one initial state
             currentStateObject = State.create(StateDescriptorFactory.INSTANCE.get("Initial"));
+            log.info("StateHandler.ctor() Initialising to Initial");
         } catch(Exception e) {
-            log.error("StateHandler.ctor() Exception=",e);
+            log.error("StateHandler.ctor() create Exception=", e);
+            //TODO Hmm changing an exception into runtime.
+            throw new ExceptionInInitializerError();
         }
-        currentEvent = new Event( currentStateObject.getState(), new Date());
+
+        try {
+            addInitialEvent(currentStateObject.getState());
+        } catch(Exception e) {
+            log.error("StateHandler.ctor() getState Exception=", e);
+            //TODO Hmm changing an exception into runtime.
+            throw new ExceptionInInitializerError();
+        }
+    }
+
+    private void addInitialEvent(StateDescriptorFactory.StateDescriptor state) throws ConfigurationException  {
+        Event current = new Event( state );
+        events.add(current);
     }
 
     public Boolean setInitialState(String stateName) {
-        log.trace("StateHandler.setInitialState() to " + stateName + ".");
-        State state = null;
+        log.trace("StateHandler.setInitialState() ...");
+        log.info("StateHandler.setInitialState() Setting initial state to " + stateName + ".");
+
         try {
-            state = State.create(StateDescriptorFactory.INSTANCE.get(stateName));
+            State state = State.create(StateDescriptorFactory.INSTANCE.get(stateName));
+            return setState( state, null );
         } catch (InvalidStateException e) {
-            log.error("StateHandler.setInitialState() Exception=",e);
+            log.error("StateHandler.setInitialState() Exception=", e);
             return false;
         }
-
-        return setState( state );
     }
 
-    protected Boolean setState(State state) {
+    private Boolean setState(State state, UUID uuid) {
         log.trace("StateHandler.setState() to " + state.getState().name + ".");
         if (state == null) {
             return false;
         }
+
         synchronized(stateLock) {
-            StateDescriptorFactory.StateDescriptor oldState = currentStateObject.getState();
-            log.debug("StateHandler.setState() before changeCurrentState from " + oldState.name + " to " + state.getState().name + ".");
+            StateDescriptorFactory.StateDescriptor currentState = currentStateObject.getState();
+            log.debug("StateHandler.setState() before changeCurrentState from " + currentState.name + " to " + state.getState().name + ".");
             currentStateObject = state;
-            currentEvent = new Event(oldState, state.getState(), new Date());
+
+            try {
+                if (uuid != null) {
+                    addSuccessEvent(currentState, state.getState(), uuid);
+                }
+                else {
+                    if (currentState.stateType == StateDescriptorFactory.StateType.Initial) {
+                        addInternalConfigurationEvent(state.getState());
+                    }
+                    else {
+                        addFailedEvent(currentState, state.getState());
+                    }
+                }
+            } catch (Exception e) {
+                log.error("StateHandler.setState() Exception.", e);
+                return false;
+            }
         }
         return true;
     }
 
-    public Event getLastEvent() {
-        return currentEvent;
+    private void addSuccessEvent(StateDescriptorFactory.StateDescriptor fromState, StateDescriptorFactory.StateDescriptor toState, UUID uuid) throws ConfigurationException {
+        Event current = new Event(fromState, toState, uuid );
+        events.add(current);
     }
 
-    protected void changeCurrentState(State state) {
+    protected boolean addFailedEvent(StateDescriptorFactory.StateDescriptor fromState, StateDescriptorFactory.StateDescriptor toState) {
+        Event current = null;
+        try {
+            current = new Event( fromState, toState );
+        } catch (ConfigurationException e) {
+            log.error("StateHandler.addFailedEvent() ConfigurationException.");
+            return false;
+        }
+        events.add(current);
+        return true;
+    }
+
+    private void addInternalConfigurationEvent(StateDescriptorFactory.StateDescriptor toState) throws ConfigurationException {
+        Event current = new Event( toState );
+        events.add(current);
+    }
+
+    public Event getLastEvent() {
+        int index = events.size() - 1;
+        if (index == -1) {
+            return null;
+        }
+        return events.get(index);
+    }
+
+    public Event getLastSuccessfulEvent() {
+        int index = events.size() - 1;
+        while (index>0) {
+            try {
+                Event event = events.get(index);
+                if (event == null) {
+                    System.out.println("");
+                }
+                if ( (event.success != null)&& (event.success == true) ) {
+                    return event;
+                }
+            } catch (Exception e) {
+             e.printStackTrace();
+            }
+            index--;
+        }
+        return null;
+    }
+
+    protected boolean changeCurrentState(State proposedState, UUID uuid) {
         synchronized(stateLock) {
-            StateDescriptorFactory.StateDescriptor oldState = currentStateObject.getState();
-            log.debug("StateHandler.changeCurrentState() before changeCurrentState from " + oldState + " to " + state.getState() + ".");
-            setState(state);
+            StateDescriptorFactory.StateDescriptor currentState = currentStateObject.getState();
+            log.debug("StateHandler.changeCurrentState() before changeCurrentState from " + currentState + " to " + proposedState.getState() + ".");
+            return setState(proposedState, uuid);
         }
     }
 
@@ -79,7 +161,7 @@ public enum StateHandler {
         }
     }
 
-    protected ResultWrapper<DTO> doTransition(Message s) throws InvalidStateTransitionException, SendingException {
+    protected ResultWrapper<DataTransferObject> doTransition(Message s) throws InvalidStateTransitionException, SendingException {
         synchronized(stateLock) {
             return currentStateObject.doTransition(s);
         }

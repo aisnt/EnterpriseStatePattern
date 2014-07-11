@@ -1,18 +1,12 @@
 package state.dynamic;
 
-import command.DTO;
-import command.ResultWrapper;
-import command.TransferApi;
-import command.TransferApiImpl;
-import common.Message;
 import common.Util;
 import exceptions.InvalidStateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import exceptions.InvalidStateTransitionException;
-import exceptions.SendingException;
 import state.State;
 import state.StateDescriptorFactory;
+import state.StateHandler;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -89,37 +83,17 @@ public enum StateFactory {
             log.trace("StateFactory.Base.ctor() start.");
         }
 
-        /*
-        part 1: This is called by the StateHandler and is implemented in all the derived classes
-         */
         @Override
-        public ResultWrapper<DTO> doTransition(Message message) throws InvalidStateTransitionException, SendingException {
-            log.trace("StateFactory.Base.doTransition() from " + this.getState().name + " to " + message.getState().name + ".");
+        protected Boolean validatePolicy(StateDescriptorFactory.StateDescriptor thisState, StateDescriptorFactory.StateDescriptor nextState) {
+            log.trace("StateFactory.Base.validatePolicy() from " + thisState.name + " to " + nextState.name + ".");
+            StateHandler stateHandler = StateHandler.INSTANCE;
 
-            ResultWrapper<DTO> dtos = null;
-            if (validatePolicy(this.getState(), message.getState())) {
-                dtos = transition(message.getState(), message.getPayload());
-            } else {
-                throw new InvalidStateTransitionException("StateFactory.Base.doTransition() No transition allowed from " + this.getState().name + " to " + message.getState().name + ".");
+            if (stateHandler.getCurrentState() != this.getState()) {
+                log.error("State.Base.validatePolicy() Current state " + stateHandler.getCurrentState() + " != " + " base state " + this.getState() + ".");
+                log.error("State.Base.validatePolicy() Cannot transition.");
+                return false;
             }
 
-            return dtos;
-        }
-
-        /*
-        * part 5:  This is an implementation from State
-        */
-        @Override
-        protected ResultWrapper<DTO> sendMessage(String payload) {
-            log.trace("StateFactory.Base.sendMessage() Output -> " + payload);
-            TransferApi transferApi = new TransferApiImpl();
-            DTO dto = transferApi.get(payload);
-            ResultWrapper<DTO> dtos = new ResultWrapper<>(dto);
-            return dtos;
-        }
-
-        private Boolean validatePolicy(StateDescriptorFactory.StateDescriptor thisState, StateDescriptorFactory.StateDescriptor nextState) {
-            log.trace("StateFactory.Base.validatePolicy() from " + thisState.name + " to " + nextState.name + ".");
             int row = thisState.ordinal;
             int col = nextState.ordinal;
             log.debug("StateFactory.Base.validatePolicy() from " + row + " to " + col + ".");

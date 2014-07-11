@@ -9,6 +9,8 @@ import state.StateDescriptorFactory;
 import state.StateHandler;
 import exceptions.InvalidStateException;
 
+import java.util.Date;
+
 /**
  * Created by david.hislop@korwe.com on 2014/06/22.
  */
@@ -22,6 +24,7 @@ public class Main {
         int putMessageWait = Util.getIntProperty("PutMessageWait");
         while ( StateDescriptorFactory.INSTANCE.isFinal(StateHandler.INSTANCE.getCurrentState())) {
             try {
+                //TODO
                 int milliseconds = (int) (Math.random() * putMessageWait);
                 log.trace("Main.main() Waiting " + milliseconds + " ms in state " + StateHandler.INSTANCE.getCurrentState());
                 Thread.sleep(milliseconds);
@@ -45,10 +48,12 @@ public class Main {
 
     protected static void putMessage() throws InterruptedException, InvalidStateException {
         log.trace("Main.putMessage() start ...");
-        Message message = new Message(makeRandomState(), new java.util.Date().toString());
+
+        Date date = new java.util.Date();
+        Message message = new Message(makeRandomState(), Util.prettyPrintDate(date));
         int size = messageListener.putMessage(message);
         log.debug("Main.putMessage() messages in queue=" + size + ".");
-        log.trace("Main.putMessage() " + message.getState() + " " + message.getPayload() );
+        log.trace("Main.putMessage() " + message.getDestinationState() + " " + message.getPayload() );
     }
 
     private static StateDescriptorFactory.StateDescriptor makeRandomState() throws InvalidStateException {

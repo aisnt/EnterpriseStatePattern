@@ -13,6 +13,7 @@ import state.MessageSource;
 import state.StateDescriptorFactory;
 import state.StateHandler;
 
+import java.util.Date;
 import java.util.Iterator;
 
 import static org.junit.Assert.*;
@@ -30,6 +31,8 @@ public class MessageListenerTest  {
         Util.setProperties("src/test/resources/state.properties");
 
         //TODO Start from any state
+        //StateDescriptorFactory.StateDescriptor stateDescriptor = makeRandomState();
+        //if (!StateHandler.INSTANCE.setInitialState(stateDescriptor.name)) {
         String state = "State2";
         if (!StateHandler.INSTANCE.setInitialState(state)) {
             log.error("MessageListenerTest.setUp() setState to " + state + "failed.");
@@ -38,6 +41,10 @@ public class MessageListenerTest  {
         messageListener = new MessageListenerImpl( MessageSource.INSTANCE );
         log.trace("MessageListenerTest.setUp() start");
         messageListener.start();
+
+        //TODO
+        int index = 2;
+        new Random.Builder().index( index ).build();
     }
 
     @Test
@@ -47,7 +54,9 @@ public class MessageListenerTest  {
         log.trace("MessageListenerTest.testListener() period = " + period + ".");
         while ( !StateDescriptorFactory.INSTANCE.isFinal(StateHandler.INSTANCE.getCurrentState())) {
             try {
-                int milliseconds = Random.random(0, period);
+                //TODO
+                //int milliseconds = Random.random(0, period);
+                int milliseconds = period/2;
                 log.trace("MessageListenerTest.testListener() Waiting " + milliseconds + " ms in state " + StateHandler.INSTANCE.getCurrentState().name );
                 Thread.sleep(milliseconds);
                 putMessage();
@@ -56,48 +65,60 @@ public class MessageListenerTest  {
             }
         }
 
-        Iterator it =  MessageSource.INSTANCE.events.iterator();
-        Iterator is =  MessageSource.INSTANCE.results.iterator() ;
-        Event eventOld = null;
-        while (it.hasNext() && is.hasNext() ) {
-            Event event = (Event)it.next();
-            ResultWrapper<DTO> rw = (ResultWrapper<DTO>)is.next();
-            System.out.println(event + "  " + rw);
-            assertNotNull("Wrapper Null", rw);
-            assertNotNull("Event Null", event);
-            assertNotNull("DTO Null", rw.t);
-            assertNotNull("No to transition", event.to);
-            assertNotNull("No from transition", event.from);
-            assertNotNull("No to transition", event.date);
-            eventOld = event;
+        Iterator resultIterator =  MessageSource.INSTANCE.results.iterator();
+        ResultWrapper<DataTransferObject> resultWrapper = null;
+        while ( resultIterator.hasNext() ) {
+            resultWrapper = (ResultWrapper<DataTransferObject>)resultIterator.next();
+            assertNotNull("Wrapper Null", resultWrapper);
+            assertNotNull("DTO Null", resultWrapper.t);
+            System.out.println("Data object " + resultWrapper + ".");
         }
-        assertNotNull("EventOld not Null", eventOld);
-        assertTrue(StateDescriptorFactory.INSTANCE.isFinal(eventOld.to));
+
+        Iterator eventIterator =  StateHandler.INSTANCE.events.iterator();
+        Event event = null;
+        while ( eventIterator.hasNext() ) {
+            event = (Event)eventIterator.next();
+            System.out.println("Event " + event + ".");
+            assertNotNull("Event Null", event);
+            assertNotNull("No to transition", event.to);
+            if (event.uuid != null) {
+                assertNotNull("No from transition", event.from);
+            }
+            assertNotNull("No to transition", event.date);
+        }
+
+        assertNotNull("EventOld not Null", event);
+        assertTrue(StateDescriptorFactory.INSTANCE.isFinal(event.to));
     }
 
     @Test
     public void testMessagesAvail()   {
-        boolean b = messageListener.messagesAvail();
-        Assert.assertFalse(b);
+        boolean messagesAvail = messageListener.messagesAvail();
+        Assert.assertFalse(messagesAvail);
     }
 
     protected void putMessage() throws InterruptedException {
         log.trace("MessageListenerTest.putMessage() start ...");
-        Message message = new Message(makeRandomState(), new java.util.Date().toString());
+        Date date = new java.util.Date();
+        Message message = new Message(makeRandomState(), Util.prettyPrintDate(date));
         int size = messageListener.putMessage(message);
         log.debug("MessageListenerTest.putMessage() messages in queue=" + size + ".");
-        log.trace("MessageListenerTest.putMessage() name=" + message.getState().name + " payload=" + message.getPayload());
+        log.trace("MessageListenerTest.putMessage() name=" + message.getDestinationState().name + " payload=" + message.getPayload());
     }
 
     private StateDescriptorFactory.StateDescriptor makeRandomState() {
         log.trace("MessageListenerTest.makeRandomState() ");
-        int stateIndex = Random.random(0, StateDescriptorFactory.INSTANCE.Max()-1);
+        //TODO
+        //int stateIndex = Random.random(0, StateDescriptorFactory.INSTANCE.Max()-1);
+        int stateIndex = Random.fakeRandom();
+
         StateDescriptorFactory.StateDescriptor stateDescriptor = null;
         try {
             stateDescriptor = StateDescriptorFactory.INSTANCE.get(stateIndex);
         }
         catch (Exception ex) {
             log.error("MessageListenerTest.makeRandomState() ", ex);
+            //TODO Hmmmm
         }
         log.trace("MessageListenerTest.makeRandomState() " + stateIndex + "->" + stateDescriptor.name);
         return stateDescriptor;

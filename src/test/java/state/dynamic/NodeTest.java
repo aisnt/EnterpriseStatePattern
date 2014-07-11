@@ -14,7 +14,7 @@ public class NodeTest {
         Assert.assertNotNull( node );
     }
 
-    @Test(expected= InvalidStateException.class)
+    @Test(expected = InvalidStateException.class)
     public void testNumericCtorFail() throws InvalidStateException {
         int col = StateDescriptorFactory.INSTANCE.Max();
         int row = 0;
@@ -24,7 +24,7 @@ public class NodeTest {
 
     @Test
     public void testNumericCtor() throws InvalidStateException {
-        int col = StateDescriptorFactory.INSTANCE.get("isInitial").ordinal;
+        int col = StateDescriptorFactory.INSTANCE.get("Initial").ordinal;
         int row = StateDescriptorFactory.INSTANCE.get("State2").ordinal;
         Node node = null;
         try {
@@ -37,16 +37,16 @@ public class NodeTest {
 
     @Test
     public void testStringCtor() throws InvalidStateException {
-        String s1 = StateDescriptorFactory.INSTANCE.get("isInitial").name;
-        String s2 = StateDescriptorFactory.INSTANCE.get("isInitial").name;
+        String s1 = StateDescriptorFactory.INSTANCE.get("Initial").name;
+        String s2 = StateDescriptorFactory.INSTANCE.get("Initial").name;
         Node node = new Node(s1, s2, true);
         Assert.assertNotNull( node );
     }
 
-    @Test(expected=InvalidStateException.class)
+    @Test(expected = InvalidStateException.class)
     public void testStringCtorFail() throws InvalidStateException  {
         String s1 = "nonsense";
-        String s2 = StateDescriptorFactory.INSTANCE.get("isFinal").name;
+        String s2 = StateDescriptorFactory.INSTANCE.get("Final").name;
         new Node(s1, s2, true);
         Assert.fail();
     }
