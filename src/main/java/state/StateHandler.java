@@ -28,6 +28,7 @@ public enum StateHandler {
     public List<Event> events = new ArrayList<>();
 
     final private Boolean stateLock = false;
+
     StateHandler() {
         log.trace("StateHandler.ctor()");
         try {
@@ -50,13 +51,14 @@ public enum StateHandler {
     }
 
     private void addInitialEvent(StateDescriptorFactory.StateDescriptor state) throws ConfigurationException  {
+        log.trace("StateHandler.setInitialState() ...");
         Event current = new Event( state );
         events.add(current);
     }
 
     public Boolean setInitialState(String stateName) {
         log.trace("StateHandler.setInitialState() ...");
-        log.info("StateHandler.setInitialState() Setting initial state to " + stateName + ".");
+        log.debug("StateHandler.setInitialState() Setting initial state to " + stateName + ".");
 
         try {
             State state = State.create(StateDescriptorFactory.INSTANCE.get(stateName));
@@ -68,7 +70,8 @@ public enum StateHandler {
     }
 
     private Boolean setState(State state, UUID uuid) {
-        log.trace("StateHandler.setState() to " + state.getState().name + ".");
+        log.trace("StateHandler.setState() ...");
+        log.debug("StateHandler.setState() to " + state.getState().name + ".");
         if (state == null) {
             return false;
         }
@@ -99,11 +102,13 @@ public enum StateHandler {
     }
 
     private void addSuccessEvent(StateDescriptorFactory.StateDescriptor fromState, StateDescriptorFactory.StateDescriptor toState, UUID uuid) throws ConfigurationException {
+        log.trace("StateHandler.addSuccessEvent() ...");
         Event current = new Event(fromState, toState, uuid );
         events.add(current);
     }
 
     protected boolean addFailedEvent(StateDescriptorFactory.StateDescriptor fromState, StateDescriptorFactory.StateDescriptor toState) {
+        log.trace("StateHandler.addFailedEvent() ...");
         Event current = null;
         try {
             current = new Event( fromState, toState );
@@ -116,11 +121,13 @@ public enum StateHandler {
     }
 
     private void addInternalConfigurationEvent(StateDescriptorFactory.StateDescriptor toState) throws ConfigurationException {
+        log.trace("StateHandler.addInternalConfigurationEvent() ...");
         Event current = new Event( toState );
         events.add(current);
     }
 
     public Event getLastEvent() {
+        log.trace("StateHandler.getLastEvent() ...");
         int index = events.size() - 1;
         if (index == -1) {
             return null;
@@ -129,18 +136,21 @@ public enum StateHandler {
     }
 
     public Event getLastSuccessfulEvent() {
+        log.trace("StateHandler.getLastSuccessfulEvent() ...");
         int index = events.size() - 1;
-        while (index>0) {
+        while (index >= 0) {
             try {
                 Event event = events.get(index);
                 if (event == null) {
-                    System.out.println("");
+                    log.error("StateHandler.getLastSuccessfulEvent() null event");
                 }
-                if ( (event.success != null)&& (event.success == true) ) {
-                    return event;
+                else {
+                    if ((event.success != null) && (event.success == true)) {
+                        return event;
+                    }
                 }
             } catch (Exception e) {
-             e.printStackTrace();
+                log.error("StateHandler.getLastSuccessfulEvent() Exception=" + e.getMessage() );
             }
             index--;
         }
@@ -148,22 +158,29 @@ public enum StateHandler {
     }
 
     protected boolean changeCurrentState(State proposedState, UUID uuid) {
+        log.trace("StateHandler.changeCurrentState() ...");
         synchronized(stateLock) {
             StateDescriptorFactory.StateDescriptor currentState = currentStateObject.getState();
-            log.debug("StateHandler.changeCurrentState() before changeCurrentState from " + currentState + " to " + proposedState.getState() + ".");
+            log.debug("StateHandler.changeCurrentState() before changeCurrentState from " + currentState.name + " to " + proposedState.getState().name + ".");
             return setState(proposedState, uuid);
         }
     }
 
     public StateDescriptorFactory.StateDescriptor getCurrentState() {
+        log.trace("StateHandler.getCurrentState() ...");
         synchronized(stateLock) {
             return currentStateObject.getState();
         }
     }
 
     protected ResultWrapper<DataTransferObject> doTransition(Message s) throws InvalidStateTransitionException, SendingException {
+        log.trace("StateHandler.doTransition() ...");
         synchronized(stateLock) {
             return currentStateObject.doTransition(s);
         }
+    }
+
+    public void reset() {
+        events = new ArrayList<>();
     }
 }

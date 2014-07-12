@@ -40,5 +40,9 @@ public enum MessageSource implements Command {
 
     //TODO these can be sent back
     public List<ResultWrapper<DataTransferObject> > results = new ArrayList<>();
+
+    public void reset() {
+        results = new ArrayList<>();
+    }
 }
 

@@ -4,8 +4,8 @@ import common.Message;
 import common.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import state.StateHandler;
 import state.StateDescriptorFactory;
+import state.StateHandler;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,7 +30,7 @@ public class MessageListenerImpl extends MessageListener {
     protected boolean messagesAvail() {
         log.trace("MessageListenerImpl.messagesAvail() start ...");
         int size = size();
-        log.trace("MessageListenerImpl.messagesAvail(). Queue size = " + size + ".");
+        log.trace("MessageListenerImpl.messagesAvail() size = " + size + ".");
         return (size > 0);
     }
 
@@ -39,7 +39,7 @@ public class MessageListenerImpl extends MessageListener {
         synchronized(messages) {
             size = messages.size();
         }
-        log.trace("MessageListenerImpl.size(). Queue size = " + size + ".");
+        log.trace("MessageListenerImpl.size() = " + size + ".");
         return size ;
     }
 
@@ -70,6 +70,7 @@ public class MessageListenerImpl extends MessageListener {
         }
 
         log.trace("MessageListenerImpl.popMessage() After size=" + messages.size() + ".");
+        log.trace("MessageListenerImpl.popMessage() ... end");
         return message;
     }
 
@@ -85,7 +86,8 @@ public class MessageListenerImpl extends MessageListener {
         }
         log.trace("MessageListenerImpl.addMessage() notify.");
         notify();
-        log.trace("MessageListenerImpl.addMessage() Queue size = " + size() + ".");
+        log.debug("MessageListenerImpl.addMessage() Added " + message.getDestinationState().name + " Queue size = " + size() + ".");
+        log.trace("MessageListenerImpl.addMessage() ... end");
         return size();
     }
 }

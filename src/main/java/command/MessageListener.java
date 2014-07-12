@@ -14,7 +14,7 @@ import java.io.IOException;
  * Created by david.hislop@korwe.com on 2014/06/21.
  */
 public abstract class MessageListener extends Thread {
-    private final Logger log = LoggerFactory.getLogger(this.getClass());
+    private final static Logger log = LoggerFactory.getLogger(MessageListener.class);
     public MessageListener(Command command){
         log.trace("MessageListener.ctor()");
         this.command = command;
@@ -49,10 +49,19 @@ public abstract class MessageListener extends Thread {
         log.warn("MessageListener.run() ... end");
     }
 
-    private boolean doRun(){
+    public static boolean doRun() {
+        log.trace("MessageListener.doRun() start ...");
         Event event = StateHandler.INSTANCE.getLastSuccessfulEvent();
-        if (event == null) return false;
+        if (event == null) {
+            log.trace("MessageListener.doRun() getLastSuccessfulEvent null.");
+            event = StateHandler.INSTANCE.getLastEvent();
+            if ( StateDescriptorFactory.INSTANCE.isFinal(event.to )) {
+                log.trace("MessageListener.doRun() lastEvent isFinal.");
+                return true;
+            }
+        }
         StateDescriptorFactory.StateDescriptor toState = event.to;
+        log.trace("MessageListener.doRun() toState "+ event.to.name +" is final = " + StateDescriptorFactory.INSTANCE.isFinal(toState) +".");
         return StateDescriptorFactory.INSTANCE.isFinal(toState);
     }
 

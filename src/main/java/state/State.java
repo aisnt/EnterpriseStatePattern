@@ -142,7 +142,7 @@ public abstract class State {
 
     private void insanityCheck() throws InvalidStateTransitionException {
         StateHandler stateHandler = StateHandler.INSTANCE;
-        log.debug("State.insanityCheck()  current=" + stateHandler.getCurrentState() + " this=" + this.getState() + ".");
+        log.debug("State.insanityCheck()  current=" + stateHandler.getCurrentState().name + " this=" + this.getState().name + ".");
         if (stateHandler.getCurrentState() != this.getState()) {
             throw new InvalidStateTransitionException ("Hell on earth");
         }

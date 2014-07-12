@@ -1,7 +1,11 @@
 package state;
 
+import common.Util;
 import exceptions.InvalidStateException;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
@@ -9,38 +13,37 @@ import java.util.ListIterator;
 /**
  * Created by david.hislop@korwe.com on 2014/07/07.
  */
-/*
-public enum StateDescriptor {isInitial, State1, State2, State3, isFinal, Max;
-
-    public static state.StateDescriptor getStateDescriptor(int stateIndex) throws InvalidStateException {
-        if ( (stateIndex >= StateDescriptor.Max.ordinal()) || (stateIndex < 0)) {
-            throw new InvalidStateException("Invalid State row");
-        }
-        return StateDescriptor.values()[stateIndex]; //Expensive
-    }
-
-    public static state.StateDescriptor getStateDescriptor(String state) {
-        return StateDescriptor.valueOf(state);
-    }
-}
-
-*/
 
 public enum StateDescriptorFactory {
     INSTANCE;
+
     private List<StateDescriptor> stateDescriptors = new ArrayList<>();
 
     public int Max() {
         return stateDescriptors.size();
     }
 
-    //TODO
     StateDescriptorFactory() {
-        stateDescriptors.add(new StateDescriptor("Initial", 0));
-        stateDescriptors.add(new StateDescriptor("State1", 1));
-        stateDescriptors.add(new StateDescriptor("State2", 2));
-        stateDescriptors.add(new StateDescriptor("State3", 3));
-        stateDescriptors.add(new StateDescriptor("Final", 4));
+        String fileNameValidTransitionTable = null;
+        try {
+            fileNameValidTransitionTable = Util.getStringProperty("FileNameValidTransitionTable");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        String[] columnNames = null;
+        try {
+            columnNames = getColumnNames(fileNameValidTransitionTable);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InvalidStateException e) {
+            e.printStackTrace();
+        }
+
+        for ( int i = 0;  i < columnNames.length-1;  i++) {
+            String colName = columnNames[i+1];
+            stateDescriptors.add(new StateDescriptor(colName, i));
+        }
     }
 
     public StateDescriptor get(int stateIndex) throws InvalidStateException {
@@ -77,6 +80,16 @@ public enum StateDescriptorFactory {
     }
 
     enum StateType {Initial, Final, Normal};
+
+    private String[] getColumnNames(String fileName) throws IOException, InvalidStateException {
+        FileReader fileReader = new FileReader(fileName);
+        BufferedReader bufferedReader = new BufferedReader(fileReader);
+        String line = bufferedReader.readLine();
+        String[] colNames = line.split(",");
+        fileReader.close();
+        return colNames;
+    }
+
     public class StateDescriptor {
         public StateType stateType;
         public String name;

@@ -14,6 +14,7 @@ public class DataTransferObject {
     String something;
     String somethingElse;
     Date date = new Date();
+
     @Override
     public String toString() {
         String result = null;

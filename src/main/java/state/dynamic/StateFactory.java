@@ -20,7 +20,7 @@ import java.util.List;
 public enum StateFactory {
     INSTANCE;
 
-    Logger log = LoggerFactory.getLogger(this.getClass());
+    private Logger log = LoggerFactory.getLogger(this.getClass());
 
     StateFactory()  {
         log.trace("StateFactory.ctor() start ...");
@@ -33,18 +33,23 @@ public enum StateFactory {
         } catch (InvalidStateException e ){
             log.error("StateFactory.ctor() InvalidStateException ", e);
             throw new ExceptionInInitializerError(e);
+        } catch (Exception e ){
+            log.error("StateFactory.ctor() Exception ", e);
+            throw new ExceptionInInitializerError(e);
         }
         log.trace("StateFactory.ctor() ... end");
     }
 
     private Node[][] transitions = null;
+    private String[] colNames = null;
 
     private Node[][] createValidTransitionTable(String fileName) throws IOException, InvalidStateException {
-        log.trace("ResultWrapper.createValidTransitionTable() -> " + fileName);
+        log.trace("StateFactory.createValidTransitionTable()");
+        log.debug("StateFactory.createValidTransitionTable() -> " + fileName);
         FileReader fileReader = new FileReader(fileName);
         BufferedReader bufferedReader = new BufferedReader(fileReader);
         String line = bufferedReader.readLine();
-        String[] colNames = line.split(",");
+        colNames = line.split(",");
         int len = colNames.length - 1;
         Node[][] transitionTable = new Node[len][len];
         int row = 0;
@@ -75,6 +80,10 @@ public enum StateFactory {
 
     public Base create(StateDescriptorFactory.StateDescriptor descriptor) throws IOException, InvalidStateException {
         return new Base(descriptor);
+    }
+
+    public String[] getColNames() {
+        return colNames;
     }
 
     public class Base extends State {

@@ -15,7 +15,7 @@ import java.util.Date;
  * Created by david.hislop@korwe.com on 2014/06/22.
  */
 public class Main {
-    final static Logger log = LoggerFactory.getLogger(Main.class);
+    private final static Logger log = LoggerFactory.getLogger(Main.class);
     private static MessageListenerImpl messageListener;
 
     public static void main(String[] args) throws Exception {

@@ -11,10 +11,6 @@ public class Random {
 
     public static class Builder {
         public int index = 0;
-
-        public Builder() {
-        }
-
         public Builder index(int index) {
             this.index = index;
             return this;
@@ -34,7 +30,12 @@ public class Random {
     public static int random(int lower, int upper) {
         //Return pre-cooked random numbers for testing
         if (index > 0) {
-            return fakeRandomVars[index++];
+            if ( index < fakeRandomVars.length )  {
+                return fakeRandomVars[index++];
+            }
+            else {
+                return 0;
+            }
         }
 
         int rand = (int)Math.round(Random.random((double)lower, (double)upper));

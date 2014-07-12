@@ -9,7 +9,8 @@ import java.util.*;
  * Created by davidhislop on 2014/07/07.
  */
 public class Util {
-    static private Properties properties = new Properties();;
+    static private Properties properties = new Properties();
+
     public static Properties setProperties(String file) throws IOException {
         FileInputStream input = new FileInputStream(file);
         properties.load(input);
@@ -54,5 +55,9 @@ public class Util {
             map.put(uuid, i);
             return i;
         }
+    }
+
+    public static void reset() {
+        map = new HashMap<>();
     }
 }
