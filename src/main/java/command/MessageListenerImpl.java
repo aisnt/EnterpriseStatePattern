@@ -57,14 +57,14 @@ public class MessageListenerImpl extends MessageListener {
         log.trace("MessageListenerImpl.popMessage() start ...");
         notify();
         while (!messagesAvail()) {
-            log.info("MessageListenerImpl.popMessage() messages not available. Wait.");
+            log.info("MessageListenerImpl.popMessage() messages not available. Wait...");
             wait();
-            log.trace("MessageListenerImpl.popMessage() continuing ...");
         }
+        log.trace("MessageListenerImpl.popMessage() continuing ...");
         Message message;
         synchronized(messages) {
             message = (Message) messages.get(0);
-            log.info("MessageListenerImpl.popMessage() retrieved " + message.getDestinationState().name + " state.");
+            log.debug("MessageListenerImpl.popMessage() retrieved " + message.getDestinationState().name + " state.");
             log.trace("MessageListenerImpl.popMessage() Before size=" + messages.size() + ".");
             messages.remove(0);
         }
@@ -81,7 +81,7 @@ public class MessageListenerImpl extends MessageListener {
             log.trace("MessageListenerImpl.addMessage() waiting.");
             wait();
         }
-        synchronized(message) {
+        synchronized(messages) {
             messages.add(message);
         }
         log.trace("MessageListenerImpl.addMessage() notify.");

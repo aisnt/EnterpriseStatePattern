@@ -82,10 +82,6 @@ public enum StateFactory {
         return new Base(descriptor);
     }
 
-    public String[] getColNames() {
-        return colNames;
-    }
-
     public class Base extends State {
         public Base(StateDescriptorFactory.StateDescriptor descriptor) throws IOException, InvalidStateException {
             super(descriptor);

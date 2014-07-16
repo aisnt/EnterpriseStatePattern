@@ -7,10 +7,12 @@ import exceptions.ConfigurationException;
 import exceptions.InvalidStateException;
 import exceptions.InvalidStateTransitionException;
 import exceptions.SendingException;
+import graph.JFameEventStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,10 +27,6 @@ public enum StateHandler {
     /*We need to use the derived object*/
     private State currentStateObject;
 
-    public List<Event> events = new ArrayList<>();
-
-    final private Boolean stateLock = false;
-
     StateHandler() {
         log.trace("StateHandler.ctor()");
         try {
@@ -37,14 +35,6 @@ public enum StateHandler {
             log.info("StateHandler.ctor() Initialising to Initial");
         } catch(Exception e) {
             log.error("StateHandler.ctor() create Exception=", e);
-            //TODO Hmm changing an exception into runtime.
-            throw new ExceptionInInitializerError();
-        }
-
-        try {
-            addInitialEvent(currentStateObject.getState());
-        } catch(Exception e) {
-            log.error("StateHandler.ctor() getState Exception=", e);
             //TODO Hmm changing an exception into runtime.
             throw new ExceptionInInitializerError();
         }
@@ -87,7 +77,7 @@ public enum StateHandler {
                 }
                 else {
                     if (currentState.stateType == StateDescriptorFactory.StateType.Initial) {
-                        addInternalConfigurationEvent(state.getState());
+                        addInitialEvent(state.getState());
                     }
                     else {
                         addFailedEvent(currentState, state.getState());
@@ -118,12 +108,6 @@ public enum StateHandler {
         }
         events.add(current);
         return true;
-    }
-
-    private void addInternalConfigurationEvent(StateDescriptorFactory.StateDescriptor toState) throws ConfigurationException {
-        log.trace("StateHandler.addInternalConfigurationEvent() ...");
-        Event current = new Event( toState );
-        events.add(current);
     }
 
     public Event getLastEvent() {
@@ -157,6 +141,28 @@ public enum StateHandler {
         return null;
     }
 
+    public Event getLastNonFailedEvent() {
+        log.trace("StateHandler.getLastNonFailedEvent() ...");
+        int index = events.size() - 1;
+        while (index >= 0) {
+            try {
+                Event event = events.get(index);
+                if (event == null) {
+                    log.error("StateHandler.getLastNonFailedEvent() null event");
+                }
+                else {
+                    if ((event.success != null) || (event.success == true)) {
+                        return event;
+                    }
+                }
+            } catch (Exception e) {
+                log.error("StateHandler.getLastNonFailedEvent() Exception=" + e.getMessage() );
+            }
+            index--;
+        }
+        return null;
+    }
+
     protected boolean changeCurrentState(State proposedState, UUID uuid) {
         log.trace("StateHandler.changeCurrentState() ...");
         synchronized(stateLock) {
@@ -181,6 +187,35 @@ public enum StateHandler {
     }
 
     public void reset() {
-        events = new ArrayList<>();
+        events = new Events();
     }
+
+    public Events events = new Events();
+
+    public void setCallback(JFameEventStorage j) {
+        log.trace("StateHandler.setCallback() ...");
+        this.j = j;
+    }
+    private JFameEventStorage j = null;
+
+    public class Events {
+        private Logger log = LoggerFactory.getLogger(this.getClass());
+        protected List<Event> events = new ArrayList<>();
+        public boolean add(Event event) {
+            log.trace("Events.add() ...");
+             if (j != null) {
+                 log.trace("Events.add() passing to callback");
+                 j.add(event);
+             }
+            log.trace("Events.add() Added to event list");
+            return events.add(event);
+        }
+        public int size() { return events.size();}
+
+        public Event get(int index) { return events.get(index);}
+
+        public Iterator iterator(){ return events.iterator();}
+    }
+
+    final private Boolean stateLock = false;
 }

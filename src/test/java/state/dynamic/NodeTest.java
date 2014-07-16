@@ -1,11 +1,21 @@
 package state.dynamic;
 
+import common.Util;
 import exceptions.InvalidStateException;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import state.StateDescriptorFactory;
 
 public class NodeTest {
+    @Before
+    public void setUp() throws Exception {
+
+        Util.setProperties("src/test/resources/state.properties");
+     //   MessageSource.INSTANCE.reset();
+     //   StateHandler.INSTANCE.reset();
+    }
+
     @Test
     public void testNumericCtorSimple() throws Exception {
         int col = 1;

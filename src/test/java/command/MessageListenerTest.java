@@ -288,7 +288,7 @@ public class MessageListenerTest  {
     }
 
     private boolean doRun() {
-        log.trace("MessageListenerTest.doRun() start ...");
-        return messageListener.doRun();
+        log.trace("MessageListenerTest.hasTransitionedToFinal() start ...");
+        return messageListener.hasTransitionedToFinal();
     }
 }

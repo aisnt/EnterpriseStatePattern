@@ -18,6 +18,10 @@
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-log4j12:1.7.5" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.5" level="project" />
     <orderEntry type="library" name="Maven: log4j:log4j:1.2.17" level="project" />
+    <orderEntry type="library" name="Maven: org.jgrapht:jgrapht-ext:0.9.0" level="project" />
+    <orderEntry type="library" name="Maven: org.jgrapht:jgrapht-core:0.9.0" level="project" />
+    <orderEntry type="library" name="Maven: org.tinyjee.jgraphx:jgraphx:2.0.0.1" level="project" />
+    <orderEntry type="library" name="Maven: jgraph:jgraph:5.13.0.0" level="project" />
   </component>
 </module>
 
