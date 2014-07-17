@@ -3,7 +3,7 @@ package command;
 import common.Message;
 import common.Util;
 import exceptions.InvalidStateException;
-import graph.JFameEventStorage;
+import graph.JFameEventStorageSimple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import state.MessageSource;
@@ -43,7 +43,7 @@ public class Main {
         Util.setProperties("src/main/resources/state.properties");
 
         log.trace("Main.setUp() setting event storage.");
-        jFameEventStorage = new JFameEventStorage();
+        jFameEventStorage = new JFameEventStorageSimple();
         StateHandler.INSTANCE.setCallback(jFameEventStorage);
 
         log.trace("Main.setUp() setting messageListener.");
@@ -52,12 +52,9 @@ public class Main {
 
         log.trace("Main.setUp() starting messageListener.");
         messageListener.start();
-
-        log.trace("Main.setUp() starting jFameEventStorage.");
-        jFameEventStorage.start();
     }
 
-    private static JFameEventStorage jFameEventStorage;
+    private static JFameEventStorageSimple jFameEventStorage;
 
     protected static void putMessage() throws InterruptedException, InvalidStateException {
         log.trace("Main.putMessage() start ...");

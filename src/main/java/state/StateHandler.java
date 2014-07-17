@@ -4,10 +4,9 @@ import command.DataTransferObject;
 import command.ResultWrapper;
 import common.Message;
 import exceptions.ConfigurationException;
-import exceptions.InvalidStateException;
 import exceptions.InvalidStateTransitionException;
 import exceptions.SendingException;
-import graph.JFameEventStorage;
+import graph.JFameEventStorageSimple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +35,7 @@ public enum StateHandler {
         } catch(Exception e) {
             log.error("StateHandler.ctor() create Exception=", e);
             //TODO Hmm changing an exception into runtime.
-            throw new ExceptionInInitializerError();
+            throw new ExceptionInInitializerError(e);
         }
     }
 
@@ -50,13 +49,26 @@ public enum StateHandler {
         log.trace("StateHandler.setInitialState() ...");
         log.debug("StateHandler.setInitialState() Setting initial state to " + stateName + ".");
 
-        try {
-            State state = State.create(StateDescriptorFactory.INSTANCE.get(stateName));
-            return setState( state, null );
-        } catch (InvalidStateException e) {
-            log.error("StateHandler.setInitialState() Exception=", e);
-            return false;
+        if (currentStateObject == null) {
+            log.trace("StateHandler.setInitialState() create setting currentStateObject.");
+            try {
+                //TODO Assume we have one initial state
+                currentStateObject = State.create(StateDescriptorFactory.INSTANCE.get(stateName));
+                log.info("StateHandler.setInitialState() Initialising to Initial");
+            } catch (Exception e) {
+                log.error("StateHandler.setInitialState() create Exception=", e);
+                //TODO Hmm changing an exception into runtime.
+                throw new ExceptionInInitializerError(e);
+            }
         }
+
+        try {
+            addInitialEvent( currentStateObject.getState() );
+        } catch (ConfigurationException e) {
+            log.error("StateHandler.setInitialState() ConfigurationException =", e);
+            throw new ExceptionInInitializerError(e);
+        }
+        return true;
     }
 
     private Boolean setState(State state, UUID uuid) {
@@ -122,6 +134,7 @@ public enum StateHandler {
     public Event getLastSuccessfulEvent() {
         log.trace("StateHandler.getLastSuccessfulEvent() ...");
         int index = events.size() - 1;
+        log.trace("StateHandler.getLastSuccessfulEvent() size=" + index + ".");
         while (index >= 0) {
             try {
                 Event event = events.get(index);
@@ -188,15 +201,17 @@ public enum StateHandler {
 
     public void reset() {
         events = new Events();
+        currentStateObject = null;
+        j=null;
     }
 
     public Events events = new Events();
 
-    public void setCallback(JFameEventStorage j) {
+    public void setCallback(JFameEventStorageSimple j) {
         log.trace("StateHandler.setCallback() ...");
         this.j = j;
     }
-    private JFameEventStorage j = null;
+    private JFameEventStorageSimple j = null;
 
     public class Events {
         private Logger log = LoggerFactory.getLogger(this.getClass());

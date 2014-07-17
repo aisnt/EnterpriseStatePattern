@@ -37,8 +37,6 @@ public class JFameEventStorageSimple implements EventCallback {
         log.trace("JFameEventStorage.add() event " + event.toString() + ".");
 
         if (event != null && (event.success==null || event.success) ) {
-            log.debug("JFameEventStorage.add() event " + event.toString() + ".");
-
             log.trace("JFameEventStorage.add() change colour " + event.to.name + ".");
             SwingUtilities.invokeLater(new Runnable() {
                                            public void run() {

@@ -58,13 +58,24 @@ public abstract class MessageListener extends Thread {
         Event event = StateHandler.INSTANCE.getLastSuccessfulEvent();
         if (event == null) {
             log.trace("MessageListener.hasTransitionedToFinal() getLastSuccessfulEvent null.");
-            /*event = StateHandler.INSTANCE.getLastEvent();
-            if ( StateDescriptorFactory.INSTANCE.hasTransitionedToFinal(event.to )) {
-                log.trace("MessageListener.hasTransitionedToFinal() lastEvent hasTransitionedToFinal.");
-                return true;
-            }*/
+            event = StateHandler.INSTANCE.getLastEvent();
+            if ( StateDescriptorFactory.INSTANCE.isFinal( event.to )) {
+                if (event.from == null) {
+                    //This would typically happen on initialise to a final state
+                    log.trace("MessageListener.hasTransitionedToFinal() lastEvent hasTransitionedToFinal from a null state.");
+                    return true;
+                }
+                else if ( StateDescriptorFactory.INSTANCE.isInitial( event.from ) && ( event.success == null ) ) {
+                    log.trace("MessageListener.hasTransitionedToFinal() lastEvent hasTransitionedToFinal from null to.");
+                    return true;
+                }
+                log.trace("MessageListener.hasTransitionedToFinal() Last unsuccessful event from non initial to final not allowed.");
+                return false;
+            }
+            log.trace("MessageListener.hasTransitionedToFinal() Unsuccessful transition to no Final state");
             return false;
         }
+
         StateDescriptorFactory.StateDescriptor toState = event.to;
         log.trace("MessageListener.hasTransitionedToFinal() toState "+ event.to.name +" is final = " + StateDescriptorFactory.INSTANCE.isFinal(toState) +".");
         return StateDescriptorFactory.INSTANCE.isFinal(toState);
