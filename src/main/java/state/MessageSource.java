@@ -23,7 +23,7 @@ public enum MessageSource implements Command {
     @Override
     public void onMessage(Message s)  {
         StateHandler stateHandler = StateHandler.INSTANCE;
-        StateDescriptorFactory.StateDescriptor currentState = stateHandler.getCurrentState();
+        StateDescriptor currentState = stateHandler.getCurrentState();
         log.debug("MessageSource.onMessage() Proposed transition from " + currentState.name + " to " + s.getDestinationState().name + ".");
         try {
             ResultWrapper<DataTransferObject> dto = stateHandler.doTransition(s);

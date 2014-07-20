@@ -5,9 +5,6 @@ import org.slf4j.LoggerFactory;
 import state.Event;
 
 import javax.swing.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Created by david.hislop@korwe.com on 2014/07/13.
@@ -15,7 +12,6 @@ import java.util.List;
 public class JFameEventStorageSimple implements EventCallback {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    private List messages = Collections.synchronizedList(new ArrayList());
     JGraphDynamicStateChangeViewer component = null;
 
     public JFameEventStorageSimple() {

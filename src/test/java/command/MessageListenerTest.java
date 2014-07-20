@@ -5,13 +5,12 @@ import common.Random;
 import common.Util;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import state.Event;
-import state.MessageSource;
-import state.StateDescriptorFactory;
-import state.StateHandler;
+import state.*;
 
 import java.util.Date;
 import java.util.Iterator;
@@ -21,13 +20,14 @@ import static org.junit.Assert.*;
 /**
  * Created by david.hislop@korwe.com on 2014/06/21.
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class MessageListenerTest  {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     MessageListenerImpl messageListener = null;
 
     @Before
     public void setUp() throws Exception {
-        log.info("MessageListenerTest.setUp()");
+        log.info("MessageListenerTest.setUp() ...");
         Util.setProperties("src/test/resources/state.properties");
 
         MessageSource.INSTANCE.reset();
@@ -41,12 +41,13 @@ public class MessageListenerTest  {
 
         //Clear RNG
         new Random.Builder().index(0).build();
+        log.info("MessageListenerTest.setUp() ... end");
     }
 
     //Different initial state
     @Test
     public void testListenerState0Initial() throws Exception {
-        log.trace("MessageListenerTest.testListenerState0Initial()");
+        log.trace("MessageListenerTest.testListenerState0Initial() ...");
 
         String state = "Initial";
         if (!StateHandler.INSTANCE.setInitialState(state)) {
@@ -72,12 +73,13 @@ public class MessageListenerTest  {
         check();
 
         Thread.sleep(5000);
+        log.trace("MessageListenerTest.testListenerState0Initial() ...end");
     }
 
     //Different initial state
     @Test
     public void testListenerState1() throws Exception {
-        log.trace("MessageListenerTest.testListenerState1()");
+        log.trace("MessageListenerTest.testListenerState1() ...");
 
         String state = "State1";
         if (!StateHandler.INSTANCE.setInitialState(state)) {
@@ -103,12 +105,13 @@ public class MessageListenerTest  {
         check();
 
         Thread.sleep(5000);
+        log.trace("MessageListenerTest.testListenerState1() ...end");
     }
 
     //Faked Random states
     @Test
     public void testListenerState2() throws Exception {
-        log.trace("MessageListenerTest.testListenerState2()");
+        log.trace("MessageListenerTest.testListenerState2() ...");
 
         String state = "State2";
         if (!StateHandler.INSTANCE.setInitialState(state)) {
@@ -134,12 +137,13 @@ public class MessageListenerTest  {
         check();
 
         Thread.sleep(5000);
+        log.trace("MessageListenerTest.testListenerState2() ...end");
     }
 
     //Different initial state
     @Test
     public void testListenerState3() throws Exception {
-        log.trace("MessageListenerTest.testListenerState3()");
+        log.trace("MessageListenerTest.testListenerState3() ...");
 
         String state = "State3";
         if (!StateHandler.INSTANCE.setInitialState(state)) {
@@ -165,12 +169,13 @@ public class MessageListenerTest  {
         check();
 
         Thread.sleep(5000);
+        log.trace("MessageListenerTest.testListenerState3() ...end");
     }
 
     //Different initial state
     @Test
     public void testListenerState4Final() throws Exception {
-        log.trace("MessageListenerTest.testListenerState4Final()");
+        log.trace("MessageListenerTest.testListenerState4Final() ...");
 
         String state = "Final";
         if (!StateHandler.INSTANCE.setInitialState(state)) {
@@ -196,6 +201,7 @@ public class MessageListenerTest  {
         check();
 
         Thread.sleep(5000);
+        log.trace("MessageListenerTest.testListenerState4Final() ...end");
     }
 
     //The whole shebang
@@ -203,7 +209,7 @@ public class MessageListenerTest  {
     public void testListenerStateRandom() throws Exception {
         log.trace("MessageListenerTest.testListenerStateRandom() ...");
 
-        StateDescriptorFactory.StateDescriptor stateDescriptor = makeRandomState();
+        StateDescriptor stateDescriptor = makeRandomState();
         if (!StateHandler.INSTANCE.setInitialState(stateDescriptor.name)) {
             log.error("MessageListenerTest.testListenerStateRandom() setState to " + stateDescriptor.name + "failed.");
             fail();
@@ -223,9 +229,9 @@ public class MessageListenerTest  {
         }
         log.trace("MessageListenerTest.testListenerStateRandom() exiting while loop. Printing results.");
         check();
-        log.trace("MessageListenerTest.testListenerStateRandom() ...end");
 
         Thread.sleep(5000);
+        log.trace("MessageListenerTest.testListenerStateRandom() ... end");
     }
 
     private void check() {
@@ -257,8 +263,10 @@ public class MessageListenerTest  {
 
     @Test
     public void testMessagesAvail()   {
+        log.trace("MessageListenerTest.testMessagesAvail() start ...");
         boolean messagesAvail = messageListener.messagesAvail();
         Assert.assertFalse(messagesAvail);
+        log.trace("MessageListenerTest.testMessagesAvail() ... end");
     }
 
     protected void putMessage() throws InterruptedException {
@@ -268,14 +276,15 @@ public class MessageListenerTest  {
         int size = messageListener.putMessage(message);
         log.debug("MessageListenerTest.putMessage() messages in queue=" + size + ".");
         log.trace("MessageListenerTest.putMessage() name=" + message.getDestinationState().name + " payload=" + message.getPayload());
+        log.trace("MessageListenerTest.putMessage() ... end");
     }
 
-    private StateDescriptorFactory.StateDescriptor makeRandomState() {
-        log.trace("MessageListenerTest.makeRandomState() ");
+    private StateDescriptor makeRandomState() {
+        log.trace("MessageListenerTest.makeRandomState() ...");
 
         int stateIndex = Random.random(0, StateDescriptorFactory.INSTANCE.Max()-1);
 
-        StateDescriptorFactory.StateDescriptor stateDescriptor = null;
+        StateDescriptor stateDescriptor = null;
         try {
             stateDescriptor = StateDescriptorFactory.INSTANCE.get(stateIndex);
         }
@@ -288,7 +297,14 @@ public class MessageListenerTest  {
     }
 
     private boolean doRun() {
-        log.trace("MessageListenerTest.hasTransitionedToFinal() start ...");
         return messageListener.hasTransitionedToFinal();
+    }
+
+    @Test
+    public void hasTransitionedToFinalTest() {
+        log.trace("MessageListenerTest.hasTransitionedToFinalTest() start ...");
+        boolean b = messageListener.hasTransitionedToFinal();
+        assertFalse(b);
+        log.trace("MessageListenerTest.hasTransitionedToFinalTest() ... end");
     }
 }

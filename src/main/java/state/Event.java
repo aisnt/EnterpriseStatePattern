@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Date;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -15,7 +16,7 @@ import java.util.UUID;
 
 public class Event {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
-    public Event( StateDescriptorFactory.StateDescriptor from, StateDescriptorFactory.StateDescriptor to, UUID uuid ) throws ConfigurationException {
+    public Event( StateDescriptor from, StateDescriptor to, UUID uuid ) throws ConfigurationException {
         log.trace("Event.ctor() start From: " + from.name +" To: " + to.name + ".");
         if ((uuid==null) || (from==null) || (uuid==null) ) {
             throw new ConfigurationException();
@@ -30,7 +31,7 @@ public class Event {
         this.error = "";
     }
 
-    public Event( StateDescriptorFactory.StateDescriptor to ) throws ConfigurationException {
+    public Event( StateDescriptor to ) throws ConfigurationException {
         log.trace("Event.ctor()  To: " + to.name + ".");
         if  (to==null)  {
             throw new ConfigurationException();
@@ -43,7 +44,7 @@ public class Event {
         this.uuid = null;
     }
 
-    public Event( StateDescriptorFactory.StateDescriptor from, StateDescriptorFactory.StateDescriptor to ) throws ConfigurationException {
+    public Event( StateDescriptor from, StateDescriptor to ) throws ConfigurationException {
         log.trace("Event.ctor() start From: null To: " + to.name + ".");
         if ( (from==null ) || (to==null ) ){
             throw new ConfigurationException();
@@ -57,22 +58,8 @@ public class Event {
         this.uuid = null;
     }
 
-    public Event( StateDescriptorFactory.StateDescriptor current, String error ) throws ConfigurationException {
-        log.trace("Event.ctor() start From: null To: " + to.name + ".");
-        if ( (current==null) || (error==null) ) {
-            throw new ConfigurationException();
-        }
-
-        this.from = null;
-        this.to = current;
-        this.date = new Date();
-        this.success = false;
-        this.error = error;
-        this.uuid = null;
-    }
-
-    public StateDescriptorFactory.StateDescriptor from;
-    public StateDescriptorFactory.StateDescriptor to;
+    public StateDescriptor from;
+    public StateDescriptor to;
     public Date date ;
     public Boolean success = null;
     public String error = "";
@@ -90,5 +77,20 @@ public class Event {
             result += " Error=" + error + ".";
         }
         return result;
+    }
+
+
+    @Override
+    public boolean equals(Object other) {
+        if (!(other instanceof Event)) {
+            return false;
+        }
+        Event that = (Event)other;
+        return (this.from.equals(that.from) && this.to.equals(that.to)  && this.error.equals(that.error) && (this.success == that.success) && (this.date == that.date) && (this.uuid == that.uuid) );
+    }
+
+    @Override
+    public int hashCode() {
+        return (success ? 0 : 1) + Objects.hashCode(this.from) + Objects.hashCode(this.to) + Objects.hashCode(error) + Objects.hashCode(uuid) + Objects.hashCode(date) + 13;
     }
 }

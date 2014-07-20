@@ -1,5 +1,7 @@
 package common;
 
+import exceptions.InvalidPropertyException;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -24,6 +26,9 @@ public class Util {
 
     public static int getIntProperty(String name) throws IOException {
         String var = properties.getProperty(name);
+        if (var == null) {
+            throw new InvalidPropertyException("Variable " + name + " does not exist.");
+        }
         return Integer.parseInt(var);
     }
 

@@ -5,6 +5,7 @@ import common.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import state.Event;
+import state.StateDescriptor;
 import state.StateDescriptorFactory;
 import state.StateHandler;
 
@@ -46,11 +47,14 @@ public abstract class MessageListener extends Thread {
         } catch (IOException e) {
             log.info("MessageListener.run() IOException = " + e.getMessage());
         }
-        log.warn("MessageListener.run() ... end");
+
         try {
             Thread.sleep(5000);
         } catch (InterruptedException e) {
+            log.warn("MessageListener.run() InterruptedException ", e.getMessage());
         }
+
+        log.warn("MessageListener.run() ... end");
     }
 
     public static boolean hasTransitionedToFinal() {
@@ -59,7 +63,12 @@ public abstract class MessageListener extends Thread {
         if (event == null) {
             log.trace("MessageListener.hasTransitionedToFinal() getLastSuccessfulEvent null.");
             event = StateHandler.INSTANCE.getLastEvent();
+            if (event == null) {
+                log.trace("MessageListener.hasTransitionedToFinal() no events.");
+                return false;
+            }
             if ( StateDescriptorFactory.INSTANCE.isFinal( event.to )) {
+                log.trace("MessageListener.hasTransitionedToFinal() event.to is final.");
                 if (event.from == null) {
                     //This would typically happen on initialise to a final state
                     log.trace("MessageListener.hasTransitionedToFinal() lastEvent hasTransitionedToFinal from a null state.");
@@ -76,11 +85,12 @@ public abstract class MessageListener extends Thread {
             return false;
         }
 
-        StateDescriptorFactory.StateDescriptor toState = event.to;
+        StateDescriptor toState = event.to;
         log.trace("MessageListener.hasTransitionedToFinal() toState "+ event.to.name +" is final = " + StateDescriptorFactory.INSTANCE.isFinal(toState) +".");
         return StateDescriptorFactory.INSTANCE.isFinal(toState);
     }
 
     protected abstract Message getMessage() throws InterruptedException;
+
     protected abstract boolean messagesAvail();
 }

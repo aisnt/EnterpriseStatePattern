@@ -5,8 +5,7 @@ import exceptions.InvalidStateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import state.State;
-import state.StateDescriptorFactory;
-import state.StateHandler;
+import state.StateDescriptor;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -78,26 +77,20 @@ public enum StateFactory {
         return transitionTable;
     }
 
-    public Base create(StateDescriptorFactory.StateDescriptor descriptor) throws IOException, InvalidStateException {
+    public Base create(StateDescriptor descriptor) throws IOException, InvalidStateException {
         return new Base(descriptor);
     }
 
     public class Base extends State {
-        public Base(StateDescriptorFactory.StateDescriptor descriptor) throws IOException, InvalidStateException {
+        private Logger log = LoggerFactory.getLogger(this.getClass());
+        public Base(StateDescriptor descriptor) throws IOException, InvalidStateException {
             super(descriptor);
-            log.trace("StateFactory.Base.ctor() start.");
+            log.trace("StateFactory.Base.ctor().");
         }
 
         @Override
-        protected Boolean validatePolicy(StateDescriptorFactory.StateDescriptor thisState, StateDescriptorFactory.StateDescriptor nextState) {
+        protected Boolean validatePolicy(StateDescriptor thisState, StateDescriptor nextState) {
             log.trace("StateFactory.Base.validatePolicy() from " + thisState.name + " to " + nextState.name + ".");
-            StateHandler stateHandler = StateHandler.INSTANCE;
-
-            if (stateHandler.getCurrentState() != this.getState()) {
-                log.error("State.Base.validatePolicy() Current state " + stateHandler.getCurrentState() + " != " + " base state " + this.getState() + ".");
-                log.error("State.Base.validatePolicy() Cannot transition.");
-                return false;
-            }
 
             int row = thisState.ordinal;
             int col = nextState.ordinal;

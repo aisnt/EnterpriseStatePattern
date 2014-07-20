@@ -39,10 +39,11 @@ public enum StateHandler {
         }
     }
 
-    private void addInitialEvent(StateDescriptorFactory.StateDescriptor state) throws ConfigurationException  {
+    protected boolean addInitialEvent(StateDescriptor state) throws ConfigurationException  {
         log.trace("StateHandler.setInitialState() ...");
         Event current = new Event( state );
         events.add(current);
+        return true;
     }
 
     public Boolean setInitialState(String stateName) {
@@ -79,7 +80,7 @@ public enum StateHandler {
         }
 
         synchronized(stateLock) {
-            StateDescriptorFactory.StateDescriptor currentState = currentStateObject.getState();
+            StateDescriptor currentState = currentStateObject.getState();
             log.debug("StateHandler.setState() before changeCurrentState from " + currentState.name + " to " + state.getState().name + ".");
             currentStateObject = state;
 
@@ -103,13 +104,14 @@ public enum StateHandler {
         return true;
     }
 
-    private void addSuccessEvent(StateDescriptorFactory.StateDescriptor fromState, StateDescriptorFactory.StateDescriptor toState, UUID uuid) throws ConfigurationException {
+    protected boolean addSuccessEvent(StateDescriptor fromState, StateDescriptor toState, UUID uuid) throws ConfigurationException {
         log.trace("StateHandler.addSuccessEvent() ...");
         Event current = new Event(fromState, toState, uuid );
         events.add(current);
+        return true;
     }
 
-    protected boolean addFailedEvent(StateDescriptorFactory.StateDescriptor fromState, StateDescriptorFactory.StateDescriptor toState) {
+    protected boolean addFailedEvent(StateDescriptor fromState, StateDescriptor toState) {
         log.trace("StateHandler.addFailedEvent() ...");
         Event current = null;
         try {
@@ -124,8 +126,13 @@ public enum StateHandler {
 
     public Event getLastEvent() {
         log.trace("StateHandler.getLastEvent() ...");
+        if (events == null) {
+            log.trace("StateHandler.getLastEvent() not initialised.");
+            return null;
+        }
         int index = events.size() - 1;
         if (index == -1) {
+            log.trace("StateHandler.getLastEvent() no events.");
             return null;
         }
         return events.get(index);
@@ -179,13 +186,13 @@ public enum StateHandler {
     protected boolean changeCurrentState(State proposedState, UUID uuid) {
         log.trace("StateHandler.changeCurrentState() ...");
         synchronized(stateLock) {
-            StateDescriptorFactory.StateDescriptor currentState = currentStateObject.getState();
+            StateDescriptor currentState = currentStateObject.getState();
             log.debug("StateHandler.changeCurrentState() before changeCurrentState from " + currentState.name + " to " + proposedState.getState().name + ".");
             return setState(proposedState, uuid);
         }
     }
 
-    public StateDescriptorFactory.StateDescriptor getCurrentState() {
+    public StateDescriptor getCurrentState() {
         log.trace("StateHandler.getCurrentState() ...");
         synchronized(stateLock) {
             return currentStateObject.getState();
@@ -202,25 +209,25 @@ public enum StateHandler {
     public void reset() {
         events = new Events();
         currentStateObject = null;
-        j=null;
+        jFameEventStorageSimple =null;
     }
 
     public Events events = new Events();
 
     public void setCallback(JFameEventStorageSimple j) {
         log.trace("StateHandler.setCallback() ...");
-        this.j = j;
+        this.jFameEventStorageSimple = j;
     }
-    private JFameEventStorageSimple j = null;
+    private JFameEventStorageSimple jFameEventStorageSimple = null;
 
     public class Events {
         private Logger log = LoggerFactory.getLogger(this.getClass());
         protected List<Event> events = new ArrayList<>();
         public boolean add(Event event) {
             log.trace("Events.add() ...");
-             if (j != null) {
+             if (jFameEventStorageSimple != null) {
                  log.trace("Events.add() passing to callback");
-                 j.add(event);
+                 jFameEventStorageSimple.add(event);
              }
             log.trace("Events.add() Added to event list");
             return events.add(event);

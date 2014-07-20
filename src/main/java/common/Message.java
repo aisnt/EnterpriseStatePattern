@@ -1,18 +1,18 @@
 package common;
 
-import state.StateDescriptorFactory;
+import state.StateDescriptor;
 
 /**
  * Created by david.hislop@korwe.com on 2014/06/23.
  */
 public class Message {
-    public Message (StateDescriptorFactory.StateDescriptor destinationState, String payload) {
+    public Message (StateDescriptor destinationState, String payload) {
         this.destinationState = destinationState;
         this.payload = payload;
     }
-    StateDescriptorFactory.StateDescriptor destinationState;
+    StateDescriptor destinationState;
     String payload = "";
-    public StateDescriptorFactory.StateDescriptor getDestinationState() {
+    public StateDescriptor getDestinationState() {
         return destinationState;
     }
     public String getPayload() {

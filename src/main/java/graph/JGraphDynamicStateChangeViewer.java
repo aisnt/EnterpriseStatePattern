@@ -28,7 +28,6 @@ import java.util.Arrays;
 
 public class JGraphDynamicStateChangeViewer extends JApplet {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
-    //private static final long serialVersionUID = 3256444702936019250L;
     private static final Color DEFAULT_BG_COLOR = Color.decode("#FAFBFF");
     private static final Dimension DEFAULT_SIZE = new Dimension(530, 420);
 

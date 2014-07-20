@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import state.dynamic.StateFactory;
 
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * Created by david.hislop@korwe.com on 2014/06/23.
@@ -21,12 +22,12 @@ import java.io.IOException;
 public abstract class State {
     private final static Logger log = LoggerFactory.getLogger(State.class);
 
-    public State(StateDescriptorFactory.StateDescriptor stateDescriptor) {
+    public State(StateDescriptor stateDescriptor) {
         log.trace("State.ctor() for " + stateDescriptor.name);
         currentState = stateDescriptor;
     }
 
-    public static State create(StateDescriptorFactory.StateDescriptor stateDescriptor) {
+    public static State create(StateDescriptor stateDescriptor) {
         log.trace("State.create() " + stateDescriptor.name);
 
         try {
@@ -40,11 +41,11 @@ public abstract class State {
         return null;
     }
 
-    public StateDescriptorFactory.StateDescriptor getState() {
+    public StateDescriptor getState() {
         return currentState;
     }
 
-    private StateDescriptorFactory.StateDescriptor currentState;
+    private StateDescriptor currentState;
 
     //This is called by the StateHandler
     public ResultWrapper<DataTransferObject> doTransition(Message message)
@@ -60,15 +61,15 @@ public abstract class State {
         return dtos;
     }
 
-    protected abstract Boolean validatePolicy(StateDescriptorFactory.StateDescriptor thisState, StateDescriptorFactory.StateDescriptor nextState);
+    protected abstract Boolean validatePolicy(StateDescriptor thisState, StateDescriptor nextState) throws InvalidStateTransitionException;
 
     final Boolean transitionLock = false;
 
-    protected ResultWrapper<DataTransferObject> transitionMealy(StateDescriptorFactory.StateDescriptor destinationState, String message)
+    protected ResultWrapper<DataTransferObject> transitionMealy(StateDescriptor destinationState, String message)
             throws SendingException, InvalidStateTransitionException {
-        log.trace("State.transitionMealy() transition from " + this.getState() + " to " + destinationState.name + ".");
+        log.trace("State.transitionMealy() transition from " + this.getState().name + " to " + destinationState.name + ".");
         log.trace("State.transitionMealy() Before class Name = " + this.getClass().getName() + ".");
-        insanityCheck();
+        checkThisStateIsCurrent();
         StateHandler stateHandler = StateHandler.INSTANCE;
 
         synchronized (transitionLock) {
@@ -98,12 +99,12 @@ public abstract class State {
         }
     }
 
-    protected ResultWrapper<DataTransferObject> transitionMoore(StateDescriptorFactory.StateDescriptor destinationState, String message)
+    protected ResultWrapper<DataTransferObject> transitionMoore(StateDescriptor destinationState, String message)
             throws SendingException, InvalidStateTransitionException {
         log.trace("State.transitionMoore() transition from " + this.getState().name + " to " + destinationState.name + ".");
         log.trace("State.transitionMoore() Before class Name = " + this.getClass().getName() + ".");
         StateHandler stateHandler = StateHandler.INSTANCE;
-        insanityCheck();
+        checkThisStateIsCurrent();
         synchronized (transitionLock) {
             //Check that transition is possible
             if (!validatePolicy(this.getState(), destinationState)) {
@@ -140,11 +141,13 @@ public abstract class State {
         return wrappedDto;
     }
 
-    private void insanityCheck() throws InvalidStateTransitionException {
+    protected void checkThisStateIsCurrent() throws InvalidStateTransitionException {
         StateHandler stateHandler = StateHandler.INSTANCE;
-        log.debug("State.insanityCheck()  current=" + stateHandler.getCurrentState().name + " this=" + this.getState().name + ".");
-        if (stateHandler.getCurrentState() != this.getState()) {
-            throw new InvalidStateTransitionException ("Hell on earth");
+        log.debug("State.checkThisStateIsCurrent()  current=" + stateHandler.getCurrentState().name + " this=" + this.getState().name + ".");
+        if (!stateHandler.getCurrentState().equals(this.getState())) {
+            String err = "State.checkThisStateIsCurrent() current state (" + stateHandler.getCurrentState().name +
+                    ") and this state (" + this.getState().name + ") do not correspond.";
+            throw new InvalidStateTransitionException (err);
         }
     }
 
@@ -154,5 +157,19 @@ public abstract class State {
         DataTransferObject dto = transferApi.get(payload);
         ResultWrapper<DataTransferObject> wrappedDto = new ResultWrapper<>(dto);
         return wrappedDto;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (!(other instanceof State)) {
+            return false;
+        }
+        State that = (State)other;
+        return (this.currentState.equals(that.currentState));
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(this.currentState);
     }
 }
