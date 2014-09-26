@@ -34,7 +34,7 @@ public class MainTest {
             Assert.fail(e.getMessage());
         }
 
-        Thread.sleep(5000);
+        Thread.sleep(500000);
         assertTrue(true);
         log.trace("MainTest.test() ... end");
     }

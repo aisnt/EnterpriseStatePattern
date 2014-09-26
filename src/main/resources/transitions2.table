@@ -1,0 +1,11 @@
+,Initial,State1,State2,State3,State4,State5,State6,State7,State8,Final
+Initial,N,N,N,N,N,N,N,N,N,N
+State1,Y,N,N,Y,N,N,N,N,N,N
+State2,N,Y,N,Y,N,N,N,N,N,N
+State3,N,N,N,N,N,Y,N,Y,N,N
+State4,N,N,N,N,N,N,Y,N,N,N
+State5,N,N,N,N,Y,N,Y,N,N,N
+State6,N,N,Y,N,N,N,N,N,Y,N
+State7,N,N,Y,N,N,N,N,N,Y,N
+State8,N,N,N,N,N,Y,N,Y,N,N
+Final,N,N,N,N,Y,N,N,N,N,N

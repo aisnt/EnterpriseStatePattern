@@ -88,7 +88,12 @@ public class JGraphDynamicStateChangeViewer extends JApplet {
                 }
             }
         }
-        final JGraphSimpleLayout layout = new JGraphSimpleLayout(0, 400, 200);
+
+        //JGraphSpringLayout layout = new JGraphSpringLayout(20);
+        //JGraphAnnealingLayout layout = new JGraphAnnealingLayout();
+
+
+        final JGraphSimpleLayout layout = new JGraphSimpleLayout(JGraphSimpleLayout.TYPE_CIRCLE, 400, 200);
         final JGraphFacade facade = new JGraphFacade(jgraph);
         layout.run(facade);
         jgraph.getGraphLayoutCache().edit(facade.createNestedMap(true, true));
