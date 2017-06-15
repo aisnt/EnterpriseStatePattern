@@ -1,0 +1,16 @@
+modified: 0
+services:
+- build: ""
+  errors: []
+  image:
+    repository: "maven"
+    tag: "3.3.9-jdk-8-alpine"
+  includeRepositoryContent: true
+  name: "maven"
+  performBuild: false
+  ports:
+  - "80"
+  properties:
+  - name: "xxx"
+    value: "yyy"
+  run: ""
